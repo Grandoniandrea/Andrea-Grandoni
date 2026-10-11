@@ -2,151 +2,133 @@
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Andrea Grandoni — Deejay & Producer</title>
-  <meta name="description" content="Andrea Grandoni, DJ & Producer con 40 anni di esperienza: House, Tech House e Afro‑Disco. Eventi, club, matrimoni e produzione musicale." />
-  <meta name="author" content="Andrea Grandoni" />
-  <meta property="og:title" content="Andrea Grandoni — Deejay & Producer" />
-  <meta property="og:description" content="DJ & Producer | 40 anni di esperienza | House • Tech House • Afro‑Disco" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>GRANDONI — DJ & Producer</title>
+  <meta name="description" content="Andrea Grandoni · GRANDONI — DJ & Producer. House, Tech House, Afro-Disco e Golden Tech. Club, eventi privati, matrimoni e produzioni." />
+  <meta property="og:title" content="GRANDONI — DJ & Producer" />
+  <meta property="og:description" content="House · Tech House · Afro-Disco · Golden Tech — Booking per club, eventi e matrimoni." />
   <meta property="og:type" content="website" />
-  <meta property="og:image" content="assets/andrea-grandoni.jpg" />
-  <meta name="theme-color" content="#0b0b0f" />
-  <link rel="preload" href="assets/andrea-grandoni.jpg" as="image">
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="icon" href="assets/favicon.ico" />
-  <script type="application/ld+json">
-  {"@context": "https://schema.org", "@type": "Person", "name": "Andrea Grandoni", "jobTitle": "DJ & Producer", "image": "assets/andrea-grandoni.jpg", "address": {"@type": "PostalAddress", "addressCountry": "IT", "addressRegion": "Toscana"}, "email": "mailto:grandoniandrea1@gmail.com", "url": "https://example.com", "knowsAbout": ["House", "Tech House", "Afro-Disco", "Remix", "Eventi", "Club"]}
-  </script>
+  <meta property="og:image" content="https://grandoniandrea.github.io/Andrea-Grandoni/assets/andrea-grandoni.jpg" />
+  <meta name="theme-color" content="#000000" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#000; --ink:#f3efe6; --muted:#a9a397; --line:rgba(212,175,95,.28);
+      --gold:#d4af5f; --gold-2:#f1d38c; --card:#0d0c0a;
+    }
+    *{box-sizing:border-box}
+    html{-webkit-text-size-adjust:100%}
+    body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,-apple-system,sans-serif}
+    a{color:inherit}
+    .wrap{max-width:480px;margin:0 auto;padding:0 18px 40px}
+
+    /* HERO */
+    .hero{position:relative;height:min(78vh,640px);max-width:480px;margin:0 auto;overflow:hidden}
+    .hero img{position:absolute;right:-18%;top:0;height:100%;width:auto;object-fit:cover}
+    .hero::after{content:"";position:absolute;inset:0;
+      background:linear-gradient(90deg,#000 0 22%,rgba(0,0,0,.55) 48%,transparent 75%),
+                 linear-gradient(180deg,transparent 55%,#000 96%)}
+    .hero-copy{position:absolute;left:18px;right:18px;bottom:22px;z-index:1}
+    .kicker{font-size:.72rem;letter-spacing:.32em;text-transform:uppercase;color:var(--gold)}
+    h1{font-family:"Cormorant Garamond",serif;font-weight:600;font-size:3.1rem;line-height:1;margin:.35rem 0 .3rem;letter-spacing:.06em;
+       background:linear-gradient(180deg,var(--gold-2),var(--gold) 70%);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .name{color:var(--muted);font-size:.95rem;margin:0}
+    .tags{margin:.7rem 0 0;font-size:.82rem;color:var(--ink);opacity:.85;letter-spacing:.04em}
+
+    /* BUTTONS */
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+    .btn{display:flex;align-items:center;justify-content:center;gap:9px;min-height:54px;padding:12px;border-radius:14px;
+         text-decoration:none;font-weight:600;font-size:.95rem;border:1px solid var(--line);background:var(--card)}
+    .btn svg{width:20px;height:20px;flex:none}
+    .btn.primary{grid-column:1/-1;background:linear-gradient(180deg,var(--gold-2),var(--gold));color:#141005;border:0}
+    .btn.save{grid-column:1/-1}
+
+    h2{font-family:"Cormorant Garamond",serif;font-weight:600;font-size:1.6rem;margin:34px 0 10px;color:var(--gold-2)}
+    p{margin:.4rem 0}
+    .muted{color:var(--muted)}
+
+    /* LINKS */
+    .links{display:flex;flex-direction:column;gap:10px}
+    .link{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;background:var(--card);border:1px solid var(--line);text-decoration:none}
+    .link svg{width:22px;height:22px;color:var(--gold);flex:none}
+    .link b{display:block;font-weight:600}
+    .link small{color:var(--muted)}
+    .link .arrow{margin-left:auto;color:var(--gold);opacity:.7}
+
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+    .chip{padding:7px 12px;border-radius:999px;border:1px solid var(--line);font-size:.85rem}
+
+    .gold-line{height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:34px 0 0;opacity:.6}
+    footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:22px}
+  </style>
 </head>
 <body>
-  <header class="hero" id="home" role="banner" aria-label="Sezione introduttiva">
-    <div class="overlay"></div>
-    <img src="assets/andrea-grandoni.jpg" alt="Andrea Grandoni DJ & Producer" class="hero-img" />
+
+  <header class="hero">
+    <img src="assets/andrea-grandoni.jpg" alt="Andrea Grandoni con le cuffie" />
     <div class="hero-copy">
-      <h1>Andrea Grandoni</h1>
-      <p class="subtitle">DJ &amp; Producer · 40 anni di esperienza</p>
-      <p class="tags">House · Tech House · Afro‑Disco</p>
-      <div class="cta">
-        <a href="#contatti" class="btn primary">Prenota ora</a>
-        <a href="#ascolta" class="btn ghost">Ascolta</a>
-      </div>
+      <div class="kicker">DJ &amp; Producer</div>
+      <h1>GRANDONI</h1>
+      <p class="name">Andrea Grandoni · Toscana</p>
+      <p class="tags">House · Tech House · Afro-Disco · Golden Tech</p>
     </div>
-    <a href="#chi-sono" class="scroll-down" aria-label="Scorri per scoprire di più">▼</a>
   </header>
 
-  <nav class="topnav" aria-label="Navigazione principale">
-    <a href="#home">Home</a>
-    <a href="#chi-sono">Chi sono</a>
-    <a href="#servizi">Servizi</a>
-    <a href="#ascolta">Ascolta</a>
-    <a href="#gallery">Gallery</a>
-    <a href="#contatti">Contatti</a>
-  </nav>
+  <main class="wrap">
 
-  <main>
-    <section id="chi-sono" class="section">
-      <div class="container grid-2">
-        <div>
-          <h2>Chi sono</h2>
-          <p>
-            Sono <strong>Andrea Grandoni</strong>, DJ e produttore con oltre quattro decenni di consolle.
-            Ho suonato in club, festival ed eventi privati in tutta la Toscana e non solo.
-            Il mio sound unisce groove House e Tech House con contaminazioni Afro‑disco,
-            creando set <em>dinamici</em> e <em>coinvolgenti</em> pensati per la pista.
-          </p>
-          <p>
-            In studio realizzo <strong>remix</strong>, <strong>edit</strong> e <strong>produzioni originali</strong>.
-            Lavoro con <span class="nowrap">FL Studio</span>, Studio One e Ableton Live e Logic Pro, integrando
-            strumenti e sintetizzatori di alto livello per un risultato professionale.
-          </p>
-          <ul class="highlights">
-            <li>Esperienza: 40+ anni · Club &amp; Eventi</li>
-            <li>Generi: House · Tech House · Afro‑Disco</li>
-            <li>Servizi: DJ set, Produzioni, Remix, Consulenza musicale</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h3>Perché scegliere me</h3>
-          <ul class="tick">
-            <li>Reading della pista e selezione <strong>su misura</strong></li>
-            <li>Setup audio professionale e gestione tecnica</li>
-            <li>Affidabilità, puntualità e cura del dettaglio</li>
-          </ul>
-        </div>
-      </div>
-    </section>
+    <div class="actions">
+      <a class="btn primary" href="https://wa.me/393206111356?text=Ciao%20Andrea%2C%20vorrei%20informazioni%20per%20una%20serata">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.7.3-.2.3-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.9 1.6.7 2.3.8 3.1.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1 0-.3-.1-.5-.2z"/></svg>
+        Prenota su WhatsApp
+      </a>
+      <a class="btn" href="tel:+393206111356">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 3h3l2 5-2 1.5a12 12 0 0 0 6.5 6.5L16 14l5 2v3a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2z"/></svg>
+        Chiama
+      </a>
+      <a class="btn" href="mailto:grandoniandrea1@gmail.com?subject=Richiesta%20booking%20GRANDONI">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+        Email
+      </a>
+      <a class="btn save" href="contatto.vcf" download="Andrea-Grandoni.vcf">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10" cy="8" r="4"/><path d="M3 20a7 7 0 0 1 14 0M19 8v6M16 11h6"/></svg>
+        Salva il mio contatto
+      </a>
+    </div>
 
-    <section id="servizi" class="section alt">
-      <div class="container">
-        <h2>Servizi</h2>
-        <div class="cards">
-          <article class="service">
-            <h3>Club &amp; Festival</h3>
-            <p>DJ set energici con costruzione del viaggio sonoro, intro‑drop, mash‑up e remix esclusivi.</p>
-          </article>
-          <article class="service">
-            <h3>Eventi privati</h3>
-            <p>Matrimoni, corporate, party: scalette personalizzate, impianti audio/luci su richiesta.</p>
-          </article>
-          <article class="service">
-            <h3>Produzioni &amp; Remix</h3>
-            <p>Arrangiamenti, editing e mastering pre‑release. Possibilità di ghost‑production.</p>
-          </article>
-          <article class="service">
-            <h3>Consulenza musicale</h3>
-            <p>Ottimizzazione DJ booth, organizzazione serate, selezione musicale per locali e brand.</p>
-          </article>
-        </div>
-      </div>
-    </section>
+    <h2>Seguimi &amp; ascolta</h2>
+    <div class="links">
+      <a class="link" href="https://www.instagram.com/grandhouse71">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+        <span><b>Instagram</b><small>@grandhouse71</small></span><span class="arrow">›</span>
+      </a>
+      <a class="link" href="https://www.facebook.com/share/19fJLy5DnR/">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14 8h3V4h-3a4 4 0 0 0-4 4v2H7v4h3v8h4v-8h3l1-4h-4V8.5c0-.3.2-.5.5-.5z"/></svg>
+        <span><b>Facebook</b><small>Andrea Grandoni</small></span><span class="arrow">›</span>
+      </a>
+      <a class="link" href="https://remix.audio/search/filter/tracks/Andrea%20Grandoni">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <span><b>I miei remix su Remix Audio</b><small>Musica italiana · selezionati da Radio Italia</small></span><span class="arrow">›</span>
+      </a>
+    </div>
 
-    <section id="ascolta" class="section">
-      <div class="container">
-        <h2>Ascolta</h2>
-        <p>Inserisci qui i tuoi link a <strong>SoundCloud</strong>, <strong>Mixcloud</strong> o <strong>YouTube</strong>.</p>
-        <div class="players">
-          <!-- Segnaposto embed: sostituisci src con i tuoi link -->
-          <iframe title="Player 1" src="about:blank" loading="lazy"></iframe>
-          <iframe title="Player 2" src="about:blank" loading="lazy"></iframe>
-        </div>
-      </div>
-    </section>
+    <h2>Chi sono</h2>
+    <p>Sono <strong>Andrea Grandoni</strong>, in arte <strong>GRANDONI</strong>: DJ e produttore con oltre 40 anni di consolle tra club, locali ed eventi privati in Toscana e in tutta Italia.</p>
+    <p class="muted">Il mio sound unisce il groove House e Tech House con contaminazioni Afro-Disco. In studio, con Logic Pro, produco tracce originali, remix ed edit — e ho creato il <strong style="color:var(--gold-2)">Golden Tech</strong>, il mio genere, nato con <em>“Candles in Gold”</em>.</p>
+    <p class="muted">Su <strong>Remix Audio</strong> produco remix di <strong>musica italiana</strong> che vengono selezionati da <strong style="color:var(--gold-2)">Radio Italia</strong>: brani pensati per la radio, che portano il mio sound a un pubblico sempre più ampio.</p>
 
-    <section id="gallery" class="section alt">
-      <div class="container">
-        <h2>Gallery</h2>
-        <div class="masonry">
-          <figure><img src="assets/andrea-grandoni.jpg" alt="Andrea alla consolle" /><figcaption>Live</figcaption></figure>
-          <figure><img src="assets/andrea-grandoni.jpg" alt="Ritratto promo" /><figcaption>Promo</figcaption></figure>
-          <figure><img src="assets/andrea-grandoni.jpg" alt="Backstage" /><figcaption>Studio</figcaption></figure>
-        </div>
-      </div>
-    </section>
+    <h2>Per il tuo evento</h2>
+    <div class="chips">
+      <span class="chip">Club &amp; locali</span>
+      <span class="chip">Matrimoni</span>
+      <span class="chip">Feste private</span>
+      <span class="chip">Eventi aziendali</span>
+      <span class="chip">Produzioni &amp; remix</span>
+    </div>
 
-    <section id="contatti" class="section">
-      <div class="container grid-2">
-        <div>
-          <h2>Contatti &amp; Booking</h2>
-          <p>Per disponibilità, cachet e rider tecnico:</p>
-          <p><a href="mailto:grandoniandrea1@gmail.com" class="contact">grandoniandrea1@gmail.com</a></p>
-          <p>WhatsApp: <a href="https://wa.me/393206111356" class="contact">+39 320 6111356</a></p>
-          <p>Disponibile per date in Toscana e in tutta Italia.</p>
-        </div>
-        <form class="contact-form" onsubmit="return submitForm(event)">
-          <label>Nome <input required name="nome" /></label>
-          <label>Email <input required type="email" name="email" /></label>
-          <label>Messaggio <textarea required name="messaggio" rows="5"></textarea></label>
-          <button class="btn primary" type="submit">Invia richiesta</button>
-          <p class="form-note">Il form invia una e‑mail tramite il tuo client. Per un invio server‑side puoi collegare Formspree, Netlify Forms o simili.</p>
-        </form>
-      </div>
-    </section>
+    <div class="gold-line"></div>
+    <footer>© GRANDONI · Andrea Grandoni — DJ &amp; Producer</footer>
   </main>
-
-  <footer class="footer">
-    <p>© 2025 Andrea Grandoni — DJ &amp; Producer</p>
-  </footer>
-
-  <script src="script.js"></script>
 </body>
 </html>
