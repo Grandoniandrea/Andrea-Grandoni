@@ -1,5 +1,5 @@
 // Copia offline: prima la rete, se manca usa la copia salvata
-const C="haccp-dido-v16";
+const C="haccp-dido-v17";
 self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(C).then(c=>c.addAll(["./","./index.html","./manifest.json","./icon-192.png"]).catch(()=>{})))});
 self.addEventListener("activate",e=>{e.waitUntil(self.clients.claim())});
 self.addEventListener("fetch",e=>{const r=e.request;if(r.method!=="GET")return;
