@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>HACCP Pocket</title>
+<meta name="description" content="HACCP Pocket: il registro HACCP sul telefono per bar, ristoranti e pizzerie. Temperature, alimenti, pulizie e sensori WiFi per i frigoriferi con allarme sul telefono.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<meta property="og:title" content="HACCP Pocket">
+<meta property="og:description" content="Tutto sotto controllo. Sempre, ovunque. Il registro HACCP sul telefono, con i sensori WiFi per i frigoriferi.">
+<meta property="og:image" content="s-home.jpg">
+<link rel="icon" href="../haccp-dido/icon-192.png">
+<style>
+/* Layout: hero a tutta larghezza verde profondo con tre telefoni a ventaglio; poi fasce chiare alternate testo/telefono; una fascia scura per i sensori */
+:root{
+  --bg:#f4f7f6; --surface:#ffffff; --ink:#122220; --muted:#576965; --line:#dbe4e1;
+  --accent:#0f6b5c; --accent-2:#14917b; --accent-ink:#ffffff; --accent-soft:#e0efeb;
+  --deep:#0a2e29; --deep-2:#0f4a41; --on-deep:#eaf4f1; --on-deep-muted:#a8c6be; --mint:#7fdcc6;
+  --cold:#2f5f9e; --warn:#b4640a; --warn-soft:#fdf1df; --ok:#1d7a45; --bad:#b3261e; --bad-soft:#fbeae8;
+  --f-display:"Barlow Semi Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-num:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --shadow:0 30px 60px -24px rgba(6,30,26,.45);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1514; --surface:#15201e; --ink:#e5eeeb; --muted:#9fb3ae; --line:#263a36;
+  --accent:#3fb39c; --accent-2:#5cc9b1; --accent-ink:#04201b; --accent-soft:#16352f;
+  --deep:#061614; --deep-2:#0b2b26; --on-deep:#e5eeeb; --on-deep-muted:#93b3ab; --mint:#7fdcc6;
+  --cold:#8db4ea; --warn:#f0b35a; --warn-soft:#38280e; --ok:#5cc98a; --bad:#ff8a80; --bad-soft:#3a1c1a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1514; --surface:#15201e; --ink:#e5eeeb; --muted:#9fb3ae; --line:#263a36;
+  --accent:#3fb39c; --accent-2:#5cc9b1; --accent-ink:#04201b; --accent-soft:#16352f;
+  --deep:#061614; --deep-2:#0b2b26; --on-deep:#e5eeeb; --on-deep-muted:#93b3ab; --mint:#7fdcc6;
+  --cold:#8db4ea; --warn:#f0b35a; --warn-soft:#38280e; --ok:#5cc98a; --bad:#ff8a80; --bad-soft:#3a1c1a; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.6 var(--f-body)}
+a{color:inherit}
+img{max-width:100%}
+.wrap{max-width:1160px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);line-height:1.04;margin:0;text-wrap:balance;letter-spacing:-.012em}
+h1{font-size:clamp(42px,6vw,76px);font-weight:800}
+h2{font-size:clamp(32px,4.2vw,50px);font-weight:800}
+h3{font-size:23px;font-weight:700}
+p{margin:0}
+.eyebrow{font:700 13px/1 var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.lead{font-size:20px;color:var(--muted);max-width:36em}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+
+/* barra in alto */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--deep) 92%,transparent);backdrop-filter:blur(10px);color:var(--on-deep);border-bottom:1px solid rgba(255,255,255,.08)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--deep)}
+.top .wrap{display:flex;align-items:center;gap:28px;padding-block:14px}
+.brand{display:flex;align-items:center;gap:10px;font:800 23px/1 var(--f-display);text-decoration:none;margin-right:auto;letter-spacing:-.01em}
+.brand svg{width:32px;height:32px;flex:none}
+.menu{display:flex;gap:24px;font-size:15px;font-weight:500}
+.menu a{text-decoration:none;color:var(--on-deep-muted)}
+.menu a:hover{color:var(--on-deep)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;font:700 17px/1 var(--f-body);text-decoration:none;border-radius:12px;padding:16px 24px;border:1.5px solid transparent;cursor:pointer;transition:transform .15s,filter .15s}
+.btn svg{width:20px;height:20px;flex:none}
+.btn:hover{transform:translateY(-1px)}
+.btn-pri{background:var(--mint);color:#062a24}
+.btn-pri:hover{filter:brightness(1.06)}
+.btn-ghost{border-color:rgba(255,255,255,.28);color:var(--on-deep)}
+.btn-dark{background:var(--accent);color:var(--accent-ink)}
+.btn-sm{padding:11px 16px;font-size:15px;border-radius:10px}
+.btn:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--mint);outline-offset:3px}
+
+/* hero */
+.hero{position:relative;overflow:hidden;background:radial-gradient(1200px 600px at 85% 20%,var(--deep-2),transparent 60%),var(--deep);color:var(--on-deep)}
+.hero::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:44px 44px;mask-image:linear-gradient(180deg,#000 30%,transparent)}
+.hero .wrap{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;align-items:center;padding-block:64px 0}
+.hero-txt{display:flex;flex-direction:column;gap:24px;min-width:0;padding-bottom:72px}
+.hero .eyebrow{color:var(--mint)}
+.hero .lead{color:var(--on-deep-muted)}
+.hero h1 em{font-style:normal;color:var(--mint)}
+.cta{display:flex;flex-wrap:wrap;gap:12px}
+.ticks{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:15px;color:var(--on-deep-muted);padding:0;margin:0;list-style:none}
+.ticks li{display:flex;align-items:center;gap:7px}
+.ticks svg{width:17px;height:17px;color:var(--mint);flex:none}
+.fan{position:relative;height:600px;min-width:0}
+.ph{position:absolute;bottom:-40px;width:250px;aspect-ratio:585/1266;border-radius:36px;border:9px solid #0b1211;background:#0b1211;overflow:hidden;box-shadow:var(--shadow)}
+.ph img{display:block;width:100%;height:100%;object-fit:cover}
+.ph.a{left:50%;transform:translateX(-50%);z-index:3;width:280px;bottom:-30px}
+.ph.b{left:4%;transform:rotate(-7deg);z-index:2;bottom:-70px;opacity:.95}
+.ph.c{right:4%;transform:rotate(7deg);z-index:2;bottom:-70px;opacity:.95}
+.float{position:absolute;z-index:4;background:var(--surface);color:var(--ink);border-radius:14px;padding:12px 15px;box-shadow:0 18px 40px -16px rgba(0,0,0,.5);font-size:14px;line-height:1.4}
+.float.probe{left:0;top:70px;min-width:200px}
+.float.probe .k{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.float.probe .k svg{width:14px;height:14px;color:var(--ok)}
+.float.probe .v{font:700 30px/1.1 var(--f-num);margin-top:3px}
+.float.probe .s{font-size:12px;color:var(--ok);font-weight:700}
+.float.tg{right:0;top:16px;max-width:240px;border-left:4px solid var(--warn)}
+.float.tg b{display:block;font-size:11px;color:var(--muted);letter-spacing:.04em;margin-bottom:2px}
+
+/* striscia numeri */
+.facts{background:var(--surface);border-bottom:1px solid var(--line)}
+.facts .wrap{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding-block:26px}
+.fact{padding:6px 22px;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.fact:first-child{border-left:0;padding-left:0}
+.fact .n{font:800 34px/1.1 var(--f-display);color:var(--accent)}
+.fact .t{font-size:15px;color:var(--muted)}
+
+section{padding-block:96px}
+.head{display:flex;flex-direction:column;gap:14px;margin-bottom:48px;max-width:760px}
+.head.c{margin-inline:auto;text-align:center;align-items:center}
+.alt{background:var(--surface);border-block:1px solid var(--line)}
+
+/* confronto */
+.vs{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px}
+.col{border-radius:20px;padding:30px;display:flex;flex-direction:column;gap:18px}
+.col.no{background:var(--bad-soft)}
+.col.si{background:var(--deep);color:var(--on-deep)}
+.col h3{font-size:26px}
+.col ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+.col li{display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;align-items:start}
+.col li svg{width:22px;height:22px;margin-top:2px}
+.col.no li svg{color:var(--bad)}
+.col.si li svg{color:var(--mint)}
+.col.si li span{color:var(--on-deep-muted)}
+.col.si li b{color:var(--on-deep)}
+
+/* righe funzione */
+.feature{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:64px;align-items:center}
+.feature + .feature{margin-top:110px}
+.feature.rev .fx{order:2}
+.fx{position:relative;display:flex;justify-content:center;min-width:0;padding-block:20px}
+.fx::before{content:"";position:absolute;inset:8% 6%;border-radius:32px;background:linear-gradient(160deg,var(--accent-soft),transparent 75%)}
+.fx .ph{position:relative;bottom:auto;width:270px;transform:none}
+.ftxt{display:flex;flex-direction:column;gap:18px;min-width:0}
+.ftxt ul{list-style:none;padding:0;margin:4px 0 0;display:flex;flex-direction:column;gap:12px}
+.ftxt li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px}
+.ftxt li svg{width:20px;height:20px;color:var(--accent);margin-top:3px}
+.quote{font:600 18px/1.4 var(--f-num);background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;color:var(--ink)}
+.alt .quote{background:var(--bg)}
+
+/* griglia funzioni */
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:10px}
+.card .ic{width:46px;height:46px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.card .ic svg{width:24px;height:24px}
+.card h3{font-size:21px}
+.card p{font-size:15.5px;color:var(--muted)}
+
+/* sensori */
+.band{background:var(--deep);color:var(--on-deep)}
+.band .eyebrow{color:var(--mint)}
+.band .lead{color:var(--on-deep-muted)}
+.sgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:56px;align-items:center}
+.flow{display:flex;flex-direction:column;border-left:2px solid #2a4c45;margin:0 0 0 10px;padding:0}
+.flow li{list-style:none;position:relative;padding:0 0 26px 28px}
+.flow li:last-child{padding-bottom:0}
+.flow li::before{content:"";position:absolute;left:-8px;top:6px;width:14px;height:14px;border-radius:50%;background:var(--mint);box-shadow:0 0 0 5px rgba(127,220,198,.15)}
+.flow h3{font-size:21px;margin-bottom:4px}
+.flow p{color:var(--on-deep-muted);font-size:16px}
+.read{background:#071c19;border:1px solid #234640;border-radius:22px;padding:24px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow)}
+.read .hd{display:flex;justify-content:space-between;font-size:13px;color:var(--on-deep-muted)}
+.read .hd span:last-child{color:var(--mint);display:flex;align-items:center;gap:6px}
+.read .hd span:last-child::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--mint)}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:baseline;border-bottom:1px solid #1b3a34;padding-bottom:12px}
+.row .n{font-weight:600}
+.row .n small{display:block;color:var(--on-deep-muted);font-weight:400;font-size:13px}
+.row .t{font:700 26px/1 var(--f-num)}
+.row .t.neg{color:#a9c8f3}.row .t.pos{color:var(--mint)}
+.msg{background:#13302c;border-radius:16px 16px 16px 4px;padding:12px 14px;font-size:15px;line-height:1.45}
+.msg b{display:block;font-size:11px;color:var(--mint);letter-spacing:.04em;margin-bottom:3px}
+.note-b{font-size:13px;color:var(--on-deep-muted)}
+
+/* passi */
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px;display:flex;flex-direction:column;gap:10px}
+.step .n{width:40px;height:40px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:700 17px/1 var(--f-num)}
+.step p{color:var(--muted);font-size:16px}
+.who{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:36px}
+.who span{font:700 18px/1 var(--f-display);border:1.5px solid var(--line);border-radius:999px;padding:11px 18px;background:var(--surface)}
+
+/* banner */
+.banner{background:linear-gradient(120deg,var(--accent),var(--accent-2));color:#fff;border-radius:26px;padding:56px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:28px;align-items:center}
+.banner h2{color:#fff}
+.banner p{color:rgba(255,255,255,.85);font-size:19px;margin-top:10px}
+.banner .btn{background:#fff;color:#0b4038}
+
+/* faq */
+.faq{display:flex;flex-direction:column;max-width:840px;margin:0 auto;gap:12px}
+details{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px 22px}
+summary{cursor:pointer;font:700 20px/1.3 var(--f-display);list-style:none;display:flex;justify-content:space-between;gap:16px;align-items:center}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";flex:none;width:30px;height:30px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font:600 20px/1 var(--f-num)}
+details[open] summary::after{content:"–"}
+details p{color:var(--muted);margin-top:12px;max-width:68ch}
+
+/* contatti */
+.contact{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:start}
+.cards{display:flex;flex-direction:column;gap:12px}
+.cc{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 18px;text-decoration:none;transition:border-color .15s}
+.cc:hover{border-color:var(--accent)}
+.cc .ic{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}
+.cc.wa .ic{background:#25d366;color:#fff}
+.cc .ic svg{width:24px;height:24px}
+.cc .l{font-size:13px;color:var(--muted)}
+.cc .v{font:600 18px/1.25 var(--f-body);overflow-wrap:anywhere;display:block}
+.cc .go{font-size:14px;font-weight:700;color:var(--accent)}
+.fine{font-size:14px;color:var(--muted)}
+.person{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.pn{display:flex;align-items:center;gap:12px;font-size:19px}
+.av{width:44px;height:44px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:800 20px/1 var(--f-display);flex:none}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+.act{display:inline-flex;align-items:center;gap:8px;text-decoration:none;border:1px solid var(--line);border-radius:10px;padding:10px 13px;font-size:15px;font-weight:600;min-width:0;overflow-wrap:anywhere;background:var(--bg)}
+.act:hover{border-color:var(--accent)}
+.act svg{width:18px;height:18px;flex:none;color:var(--accent)}
+.act.wa{background:#25d366;border-color:#25d366;color:#fff}.act.wa svg{color:#fff}
+
+footer{background:var(--deep);color:var(--on-deep-muted);padding-block:44px;font-size:15px}
+footer .wrap{display:grid;grid-template-columns:minmax(0,1.4fr) repeat(2,minmax(0,1fr));gap:32px}
+footer .brand{color:var(--on-deep);margin-bottom:10px}
+footer h4{font:700 13px/1 var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--on-deep);margin:0 0 12px}
+footer ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+footer a{text-decoration:none}
+footer a:hover{color:var(--on-deep)}
+.legal{grid-column:1/-1;border-top:1px solid rgba(255,255,255,.1);padding-top:20px;font-size:13px}
+
+@media (max-width:980px){
+  .menu{display:none}
+  .hero .wrap,.sgrid,.contact,.feature,.vs{grid-template-columns:1fr}
+  .hero-txt{padding-bottom:0}
+  .fan{height:520px}
+  .feature.rev .fx{order:0}
+  .feature{gap:36px}
+  .feature + .feature{margin-top:80px}
+  .grid,.steps{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .facts .wrap{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:18px}
+  .fact:nth-child(3){border-left:0;padding-left:0}
+  .banner{grid-template-columns:1fr;padding:40px 28px}
+  footer .wrap{grid-template-columns:1fr 1fr}
+  footer .wrap>div:first-child{grid-column:1/-1}
+}
+@media (max-width:600px){
+  body{font-size:16px}
+  section{padding-block:68px}
+  .hero .wrap{padding-block:40px 0}
+  .lead{font-size:18px}
+  .fan{height:440px}
+  .ph{width:190px;border-width:7px;border-radius:28px}
+  .ph.a{width:215px}
+  .ph.b{left:-4%}.ph.c{right:-4%}
+  .float.probe{top:30px;left:-6px;min-width:0;padding:10px 12px}.float.probe .v{font-size:24px}
+  .float.tg{top:-10px;right:-6px;max-width:180px;font-size:12.5px}
+  .grid,.steps{grid-template-columns:1fr}
+  .col{padding:24px}
+  .fx .ph{width:230px}
+  .top .btn-sm span{display:none}
+  .cc{grid-template-columns:48px minmax(0,1fr)}.cc .go{display:none}
+}
+@media (prefers-reduced-motion:no-preference){
+  .float.probe{animation:fl 6s ease-in-out infinite}
+  .float.tg{animation:fl 7s ease-in-out infinite reverse}
+  @keyframes fl{50%{translate:0 -7px}}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#inizio" aria-label="HACCP Pocket, torna all'inizio">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#7fdcc6"/><path d="M18 18.6V8a2 2 0 1 0-4 0v10.6a4 4 0 1 0 4 0Z" fill="none" stroke="#062a24" stroke-width="2.2"/><path d="M16 12v8" stroke="#062a24" stroke-width="2.2" stroke-linecap="round"/></svg>
+      HACCP Pocket
+    </a>
+    <nav class="menu" aria-label="Sezioni">
+      <a href="#funzioni">Funzioni</a><a href="#sensori">Sensori</a><a href="#come">Come si parte</a><a href="#domande">Domande</a><a href="#contatti">Contatti</a>
+    </nav>
+    <a class="btn btn-pri btn-sm" href="https://wa.me/393206111356?text=Ciao%20Andrea%2C%20vorrei%20provare%20HACCP%20Pocket" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.8 14.1c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1a17 17 0 0 1-1.8-.7 13.6 13.6 0 0 1-5.2-4.6c-.4-.5-1.2-1.6-1.2-3.1 0-1.4.8-2.1 1-2.4.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.3.5-.4.5c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.2 1.4 2.5 1.5.3.2.5.1.7-.1l.9-1.1c.2-.3.4-.2.7-.1l2 1c.3.1.5.2.6.3.1.2.1.8-.1 1.5Z"/></svg>
+      <span>Prova gratis</span>
+    </a>
+  </div>
+</header>
+
+<main id="inizio">
+<section class="hero" style="padding-block:0">
+  <div class="wrap">
+    <div class="hero-txt">
+      <span class="eyebrow">Tutto sotto controllo. Sempre, ovunque.</span>
+      <h1>Basta schede di carta. <em>Il tuo HACCP sta nel telefono.</em></h1>
+      <p class="lead">Temperature, alimenti, pulizie, fornitori e documenti in un'app sola. Con i sensori WiFi i frigoriferi registrano la temperatura da soli e ti avvisano se qualcosa non va, anche di notte.</p>
+      <div class="cta">
+        <a class="btn btn-pri" href="https://wa.me/393206111356?text=Ciao%20Andrea%2C%20vorrei%20provare%20HACCP%20Pocket" target="_blank" rel="noopener">Provala gratis</a>
+        <a class="btn btn-ghost" href="#funzioni">Guarda cosa fa</a>
+      </div>
+      <ul class="ticks">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>iPhone e Android</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>Impostata sul tuo manuale</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>PDF pronti per il controllo</li>
+      </ul>
+    </div>
+    <div class="fan" aria-label="Schermate dell'app">
+      <div class="ph b"><img src="s-temp.jpg" alt="Schermata Temperature con i quattro frigoriferi e le letture dei sensori" width="585" height="1266"></div>
+      <div class="ph c"><img src="s-pul.jpg" alt="Schermata Pulizia e sanificazione con il piano giornaliero" width="585" height="1266"></div>
+      <div class="ph a"><img src="s-home.jpg" alt="Schermata iniziale: cose da controllare oggi, letture e pulizie del giorno" width="585" height="1266"></div>
+      <div class="float probe" aria-hidden="true">
+        <div class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M2 9a15 15 0 0 1 20 0"/><path d="M5 12.5a10 10 0 0 1 14 0"/><path d="M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.5" r="1"/></svg>Frigo 3 · sensore</div>
+        <div class="v">−18,8 °C</div>
+        <div class="s">nei limiti · 5 min fa</div>
+      </div>
+      <div class="float tg" aria-hidden="true"><b>TELEGRAM · ADESSO</b>⚠️ Frigo 1 fuori limite: +6,8 °C da oltre 20 minuti.</div>
+    </div>
+  </div>
+</section>
+
+<div class="facts">
+  <div class="wrap">
+    <div class="fact"><span class="n num">5 min</span><span class="t">ogni quanto il sensore misura il frigo</span></div>
+    <div class="fact"><span class="n num">20 min</span><span class="t">fuori limite e ti arriva l'allarme</span></div>
+    <div class="fact"><span class="n num">2 al giorno</span><span class="t">letture scritte nel registro da sole</span></div>
+    <div class="fact"><span class="n num">1 tocco</span><span class="t">per preparare i PDF del controllo</span></div>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <div class="head c">
+      <span class="eyebrow">Prima e dopo</span>
+      <h2>Ancora con la penna e il foglio appeso al frigo?</h2>
+    </div>
+    <div class="vs">
+      <div class="col no">
+        <h3>Con la carta</h3>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg><span>Temperature scritte a fine settimana, tutte uguali</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg><span>Il congelatore si ferma di notte e lo scopri la mattina</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg><span>Bolle, lotti e scadenze sparsi tra cassetti e raccoglitori</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg><span>Al controllo si cercano i fogli del mese giusto</span></li>
+        </ul>
+      </div>
+      <div class="col si">
+        <h3>Con HACCP Pocket</h3>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg><span><b>Ogni lettura con data, ora e operatore</b>, e l'azione correttiva se è fuori limite</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg><span><b>Allarme sul telefono</b> dopo 20 minuti fuori temperatura</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg><span><b>Lotti e scadenze collegati alla bolla</b> del fornitore, con avviso prima che scadano</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg><span><b>Un tasto e i PDF sono pronti</b>: registri, non conformità, fornitori, attestati</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="funzioni">
+  <div class="wrap">
+    <div class="feature">
+      <div class="fx"><div class="ph"><img src="s-giro.jpg" alt="Giro rapido: dettatura a voce e temperature di ogni frigorifero" width="585" height="1266" loading="lazy"></div></div>
+      <div class="ftxt">
+        <span class="eyebrow">Giro rapido</span>
+        <h2>Le temperature della mattina in trenta secondi.</h2>
+        <p class="lead">Apri il giro rapido, parli, e l'app compila. Spunti le pulizie fatte e salvi tutto insieme.</p>
+        <div class="quote">«frigo 1 due gradi, frigo 2 tre, frigo 3 meno diciotto»</div>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg><span>Frigoriferi già codificati: positivi 0/+4 °C, negativi −18 °C</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg><span>Valore fuori limite: l'app chiede l'azione correttiva e apre la non conformità</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg><span>Con i sensori, un tasto inserisce i valori misurati</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="feature rev">
+      <div class="fx"><div class="ph"><img src="s-pul.jpg" alt="Piano di pulizia giornaliero con le attività da spuntare" width="585" height="1266" loading="lazy"></div></div>
+      <div class="ftxt">
+        <span class="eyebrow">Pulizia e sanificazione</span>
+        <h2>Il piano di pulizia del manuale, da spuntare.</h2>
+        <p class="lead">Attività giornaliere, settimanali e mensili già impostate. Ogni spunta resta registrata con chi l'ha fatta e quando.</p>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg><span>In evidenza solo quello che c'è da fare oggi</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg><span>Disinfestazione, manutenzioni e scadenze dei documenti del locale</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg><span>Firma digitale dei registri a fine mese</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="head c">
+      <span class="eyebrow">Tutto il resto</span>
+      <h2>Tutte le schede dell'autocontrollo, in un posto solo.</h2>
+    </div>
+    <div class="grid">
+      <div class="card"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8h16v12H4z"/><path d="M4 8l2-4h12l2 4"/><path d="M9 13h6"/></svg></span><h3>Alimenti e tracciabilità</h3><p>Ricevimento merci, lotti, apertura e scadenze con avviso. Etichette da stampare con un tasto.</p></div>
+      <div class="card"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7h12v9H3z"/><path d="M15 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="18" cy="17.5" r="1.8"/></svg></span><h3>Fornitori, bolle e fatture</h3><p>Fotografi la bolla e i prodotti entrano negli alimenti, collegati al fornitore e al lotto.</p></div>
+      <div class="card"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 11h16a8 8 0 0 1-16 0Z"/><path d="M9 7c0-2 2-2 2-4M14 7c0-2 2-2 2-4"/></svg></span><h3>Cotture e abbattimento</h3><p>Temperatura al cuore, abbattimento a +3 °C entro 2 ore, controllo dell'olio di frittura.</p></div>
+      <div class="card"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg></span><h3>Non conformità</h3><p>Ogni problema con la sua azione correttiva e la chiusura, pronto da mostrare.</p></div>
+      <div class="card"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3c3 4 6 6.5 6 10a6 6 0 0 1-12 0c0-3.5 3-6 6-10Z"/></svg></span><h3>Allergeni e ricettario</h3><p>Tabella allergeni dei piatti per i clienti, ricette con i giorni di conservazione.</p></div>
+      <div class="card"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M21 20c0-3-1.5-5-4-5.8"/></svg></span><h3>Personale e formazione</h3><p>Attestati con scadenza, addestramento interno, operatori che firmano le registrazioni.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="sensori">
+  <div class="wrap sgrid">
+    <div>
+      <div class="head">
+        <span class="eyebrow">Sensori WiFi per i frigoriferi</span>
+        <h2>Una sonda in ogni frigo. Il registro si compila da solo.</h2>
+        <p class="lead">Una sonda in acciaio dentro il frigo e una piccola scheda fuori, collegata alla corrente e al WiFi del locale. Niente fili da saldare: la installiamo noi o ti guidiamo passo passo.</p>
+      </div>
+      <ol class="flow">
+        <li><h3>Misura ogni 5 minuti</h3><p>La temperatura arriva nell'app, sulla scheda di ogni frigo, giorno e notte.</p></li>
+        <li><h3>Due letture al giorno nel registro</h3><p>A inizio e fine servizio, se nessuno l'ha già scritta a mano, la lettura del sensore entra nel registro da sola.</p></li>
+        <li><h3>Allarme sul telefono</h3><p>Fuori limite per 20 minuti, o sonda staccata: ti arriva un messaggio su Telegram. E un altro quando torna normale.</p></li>
+        <li><h3>Anche se il WiFi cade</h3><p>La scheda tiene in memoria fino a 8 ore di misure e le invia appena torna la rete.</p></li>
+      </ol>
+    </div>
+    <div class="read" aria-label="Esempio di letture dei sensori">
+      <div class="hd"><span>Pizzeria Esempio · 4 sensori</span><span>in linea</span></div>
+      <div class="row"><div class="n">Frigo 1<small>positivo · 0 / +4 °C</small></div><div class="t pos num">+3,3 °C</div></div>
+      <div class="row"><div class="n">Frigo 2<small>positivo · 0 / +4 °C</small></div><div class="t pos num">+3,7 °C</div></div>
+      <div class="row"><div class="n">Frigo 3<small>negativo · max −18 °C</small></div><div class="t neg num">−18,8 °C</div></div>
+      <div class="row"><div class="n">Frigo 4<small>negativo · max −18 °C</small></div><div class="t neg num">−20,1 °C</div></div>
+      <div class="msg"><b>TELEGRAM</b>⚠️ Frigo 1 fuori limite: +6,8 °C da oltre 20 minuti (limiti 0,0 / +4,0 °C). Controlla il frigo e annota l'azione correttiva.</div>
+      <div class="msg"><b>TELEGRAM</b>✅ Frigo 1 tornato nei limiti: +3,9 °C</div>
+      <p class="note-b">Esempio di letture e messaggi come arrivano sul telefono.</p>
+    </div>
+  </div>
+</section>
+
+<section id="come">
+  <div class="wrap">
+    <div class="head c">
+      <span class="eyebrow">Come si parte</span>
+      <h2>In una mattina sei operativo.</h2>
+    </div>
+    <div class="steps">
+      <div class="step"><span class="n">1</span><h3>Scrivimi su WhatsApp</h3><p>Mi dici che locale hai e quanti frigoriferi. Ti preparo l'app da provare gratis.</p></div>
+      <div class="step"><span class="n">2</span><h3>La impostiamo sul tuo locale</h3><p>Frigoriferi, piano di pulizia, fornitori e operatori, partendo dal tuo manuale di autocontrollo.</p></div>
+      <div class="step"><span class="n">3</span><h3>Aggiungi i sensori quando vuoi</h3><p>Un frigo alla volta. Dal giorno dopo le temperature entrano nel registro da sole.</p></div>
+    </div>
+    <div class="who" aria-label="Per chi è"><span>Bar</span><span>Ristoranti</span><span>Pizzerie</span><span>Gastronomie</span><span>Pasticcerie</span><span>Gelaterie</span><span>Agriturismi</span><span>Mense</span></div>
+  </div>
+</section>
+
+<section style="padding-block:0 96px">
+  <div class="wrap">
+    <div class="banner">
+      <div><h2>Provala sul tuo locale, gratis.</h2><p>Ti mostro l'app con i tuoi frigoriferi e il tuo piano di pulizia. Poi decidi.</p></div>
+      <a class="btn" href="https://wa.me/393206111356?text=Ciao%20Andrea%2C%20vorrei%20provare%20HACCP%20Pocket" target="_blank" rel="noopener">Scrivimi su WhatsApp</a>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="domande">
+  <div class="wrap">
+    <div class="head c">
+      <span class="eyebrow">Domande</span>
+      <h2>Le domande che fanno tutti.</h2>
+    </div>
+    <div class="faq">
+      <details><summary>Funziona su iPhone e su Android?</summary><p>Sì. Si apre dal telefono e si aggiunge alla schermata Home come un'app normale. Entri con la password, oppure con Face ID o impronta.</p></details>
+      <details><summary>Sostituisce il manuale di autocontrollo?</summary><p>No. Il manuale e la formazione del personale restano obbligatori. HACCP Pocket serve a tenere ogni giorno le registrazioni che il manuale prevede, in ordine e pronte da mostrare.</p></details>
+      <details><summary>Cosa mostro al controllo?</summary><p>Le schede in PDF (temperature, pulizie, non conformità, fornitori, attestati) che apri dal telefono o stampi. Un tasto le prepara tutte insieme.</p></details>
+      <details><summary>Dove restano i miei dati?</summary><p>Sul tuo telefono. L'app ti ricorda di scaricare un backup una volta al mese, e l'accesso è protetto da password.</p></details>
+      <details><summary>Quanto costano app e sensori?</summary><p>Dipende da quanti frigoriferi hai e da cosa ti serve. La prova è gratuita, il preventivo lo facciamo insieme.</p></details>
+      <details><summary>I sensori sono difficili da montare?</summary><p>No. La sonda si avvita su un morsetto e la scheda si collega con tre cavetti a incastro. La configurazione si fa da una pagina web in due minuti, oppure la facciamo noi.</p></details>
+      <details><summary>E se cambia il WiFi del locale?</summary><p>La scheda apre una sua rete: dal telefono ti colleghi e scegli il WiFi nuovo, senza computer.</p></details>
+    </div>
+  </div>
+</section>
+
+<section id="contatti">
+  <div class="wrap contact">
+    <div class="head" style="margin-bottom:0">
+      <span class="eyebrow">Contatti</span>
+      <h2>Scrivici e te la facciamo provare.</h2>
+      <p class="lead">Rispondiamo noi, Andrea e Sandro. Lavoriamo con bar, ristoranti e pizzerie della zona e ti seguiamo anche dopo la prova.</p>
+    </div>
+    <div class="cards">
+      <div class="person">
+        <div class="pn"><span class="av">A</span><span><b>Andrea Grandoni</b></span></div>
+        <div class="acts">
+          <a class="act wa" href="https://wa.me/393206111356?text=Ciao%20Andrea%2C%20vorrei%20provare%20HACCP%20Pocket" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.8 14.1c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1a17 17 0 0 1-1.8-.7 13.6 13.6 0 0 1-5.2-4.6c-.4-.5-1.2-1.6-1.2-3.1 0-1.4.8-2.1 1-2.4.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.3.5-.4.5c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.2 1.4 2.5 1.5.3.2.5.1.7-.1l.9-1.1c.2-.3.4-.2.7-.1l2 1c.3.1.5.2.6.3.1.2.1.8-.1 1.5Z"/></svg><span>WhatsApp</span></a>
+          <a class="act" href="tel:+393206111356"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg><span class="num">+39 320 611 1356</span></a>
+          <a class="act" href="mailto:grandoniandrea1@gmail.com?subject=HACCP%20Pocket"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span>grandoniandrea1@gmail.com</span></a>
+        </div>
+      </div>
+      <div class="person">
+        <div class="pn"><span class="av">S</span><span><b>Sandro Cini</b></span></div>
+        <div class="acts">
+          <a class="act wa" href="https://wa.me/393664464473?text=Ciao%20Sandro%2C%20vorrei%20provare%20HACCP%20Pocket" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.8 14.1c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1a17 17 0 0 1-1.8-.7 13.6 13.6 0 0 1-5.2-4.6c-.4-.5-1.2-1.6-1.2-3.1 0-1.4.8-2.1 1-2.4.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.3.5-.4.5c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.2 1.4 2.5 1.5.3.2.5.1.7-.1l.9-1.1c.2-.3.4-.2.7-.1l2 1c.3.1.5.2.6.3.1.2.1.8-.1 1.5Z"/></svg><span>WhatsApp</span></a>
+          <a class="act" href="tel:+393664464473"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg><span class="num">+39 366 446 4473</span></a>
+          <a class="act" href="mailto:cinisandro@gmail.com?subject=HACCP%20Pocket"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span>cinisandro@gmail.com</span></a>
+        </div>
+      </div>
+      <p class="fine">HACCP Pocket aiuta a tenere le registrazioni previste dal manuale di autocontrollo. I sensori sono strumenti di monitoraggio e vanno verificati periodicamente con il termometro di riferimento.</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <a class="brand" href="#inizio"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#7fdcc6"/><path d="M18 18.6V8a2 2 0 1 0-4 0v10.6a4 4 0 1 0 4 0Z" fill="none" stroke="#062a24" stroke-width="2.2"/><path d="M16 12v8" stroke="#062a24" stroke-width="2.2" stroke-linecap="round"/></svg>HACCP Pocket</a>
+      <p>Tutto sotto controllo. Sempre, ovunque. Il registro di autocontrollo sul telefono, con i sensori per i frigoriferi.</p>
+    </div>
+    <div><h4>Sito</h4><ul><li><a href="#funzioni">Funzioni</a></li><li><a href="#sensori">Sensori</a></li><li><a href="#come">Come si parte</a></li><li><a href="#domande">Domande</a></li></ul></div>
+    <div><h4>Contatti</h4><ul><li>Andrea Grandoni · <a href="tel:+393206111356">320 611 1356</a></li><li><a href="mailto:grandoniandrea1@gmail.com">grandoniandrea1@gmail.com</a></li><li>Sandro Cini · <a href="tel:+393664464473">366 446 4473</a></li><li><a href="mailto:cinisandro@gmail.com">cinisandro@gmail.com</a></li><li>Pontedera (PI)</li></ul></div>
+    <div class="legal">© 2026 HACCP Pocket · Andrea Grandoni e Sandro Cini · Pontedera (PI)</div>
+  </div>
+</footer>
+
+</body>
+</html>
