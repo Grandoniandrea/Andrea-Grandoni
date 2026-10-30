@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bolle e fatture · HACCP Pocket</title>
+<meta name="description" content="Tutorial HACCP Pocket: come registrare bolle (DDT) e fatture, collegare lotti e scadenze, ritrovare un lotto e stampare il registro in PDF.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="icon" href="../../haccp-dido/icon-192.png">
+<style>
+/* Layout: guida passo passo — testata scura con i pulsanti PDF/Stampa, poi passi numerati testo + telefono alternati; in stampa due passi per pagina */
+:root{
+  --bg:#f4f7f6; --surface:#ffffff; --ink:#122220; --muted:#576965; --line:#dbe4e1;
+  --accent:#0f6b5c; --accent-ink:#ffffff; --accent-soft:#e0efeb;
+  --deep:#0a2e29; --deep-2:#0f4a41; --on-deep:#eaf4f1; --on-deep-muted:#a8c6be; --mint:#7fdcc6;
+  --warn:#b4640a; --warn-soft:#fdf1df;
+  --f-display:"Barlow Semi Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-num:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1514; --surface:#15201e; --ink:#e5eeeb; --muted:#9fb3ae; --line:#263a36;
+  --accent:#3fb39c; --accent-ink:#04201b; --accent-soft:#16352f;
+  --deep:#061614; --deep-2:#0b2b26; --on-deep:#e5eeeb; --on-deep-muted:#93b3ab; --mint:#7fdcc6;
+  --warn:#f0b35a; --warn-soft:#38280e; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1514; --surface:#15201e; --ink:#e5eeeb; --muted:#9fb3ae; --line:#263a36;
+  --accent:#3fb39c; --accent-ink:#04201b; --accent-soft:#16352f;
+  --deep:#061614; --deep-2:#0b2b26; --on-deep:#e5eeeb; --on-deep-muted:#93b3ab; --mint:#7fdcc6;
+  --warn:#f0b35a; --warn-soft:#38280e; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.6 var(--f-body)}
+a{color:inherit}img{max-width:100%}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);line-height:1.05;margin:0;text-wrap:balance}
+h1{font-size:clamp(38px,5.4vw,62px);font-weight:800}
+h2{font-size:clamp(26px,3.2vw,36px);font-weight:800}
+p{margin:0}
+.eyebrow{font:700 13px/1 var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+
+.hero{background:radial-gradient(900px 500px at 90% 0%,var(--deep-2),transparent 60%),var(--deep);color:var(--on-deep)}
+.hero .wrap{padding-block:28px 56px;display:flex;flex-direction:column;gap:20px}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font:800 22px/1 var(--f-display);text-decoration:none;color:var(--on-deep)}
+.brand svg{width:30px;height:30px}
+.back{font-size:15px;color:var(--on-deep-muted);text-decoration:none}
+.back:hover{color:var(--on-deep)}
+.hero .eyebrow{color:var(--mint);margin-top:28px}
+.hero p.lead{font-size:20px;color:var(--on-deep-muted);max-width:40em}
+.btns{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px}
+.btn{display:inline-flex;align-items:center;gap:9px;font:700 16px/1 var(--f-body);text-decoration:none;border-radius:12px;padding:15px 20px;border:1.5px solid transparent;cursor:pointer;background:none}
+.btn svg{width:20px;height:20px}
+.btn-pri{background:var(--mint);color:#062a24}
+.btn-ghost{border-color:rgba(255,255,255,.3);color:var(--on-deep)}
+.btn:focus-visible,a:focus-visible{outline:3px solid var(--mint);outline-offset:3px}
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;padding:0;list-style:none}
+.toc a{display:inline-flex;gap:8px;align-items:center;text-decoration:none;font-size:14px;color:var(--on-deep);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:7px 12px}
+.toc b{font:700 13px/1 var(--f-num);color:var(--mint)}
+
+main .wrap{display:flex;flex-direction:column;gap:20px;padding-block:48px 72px}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:30px;display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:36px;align-items:center;scroll-margin-top:16px}
+.step:nth-child(even){grid-template-columns:250px minmax(0,1fr)}
+.step:nth-child(even) .fig{order:-1}
+.txt{display:flex;flex-direction:column;gap:14px;min-width:0}
+.n{display:flex;align-items:center;gap:12px}
+.n span{width:42px;height:42px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:700 18px/1 var(--f-num);flex:none}
+.txt p{color:var(--muted)}
+.txt ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.txt li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px}
+.txt li svg{width:18px;height:18px;color:var(--accent);margin-top:4px}
+.tip{background:var(--warn-soft);color:var(--ink);border-radius:12px;padding:12px 14px;font-size:15px}
+.tip b{color:var(--warn)}
+.fig{display:flex;justify-content:center}
+.ph{width:100%;max-width:250px;aspect-ratio:585/1266;border-radius:30px;border:8px solid #0b1211;background:#0b1211;overflow:hidden;box-shadow:0 24px 44px -24px rgba(6,30,26,.5)}
+.ph img{display:block;width:100%;height:100%;object-fit:cover}
+.pdfdoc{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+.pdfdoc img{display:block;width:100%;height:auto}
+.step.wide{grid-template-columns:minmax(0,1fr) 250px}
+.end{background:var(--deep);color:var(--on-deep);border-radius:22px;padding:32px;display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between}
+.end p{color:var(--on-deep-muted)}
+footer{padding-block:24px 40px;font-size:14px;color:var(--muted);text-align:center}
+
+@media (max-width:760px){
+  .step,.step:nth-child(even),.step.wide{grid-template-columns:1fr;padding:22px;gap:22px}
+  .step:nth-child(even) .fig{order:0}
+  .ph{max-width:230px}
+}
+@media print{
+  @page{size:A4;margin:12mm}
+  body{background:#fff;font-size:12pt}
+  .hero{background:#0a2e29!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .btns,.back,.toc{display:none}
+  .hero .wrap{padding-block:18px 26px}
+  main .wrap{padding-block:16px;gap:14px}
+  .step{break-inside:avoid;box-shadow:none;padding:16px 20px;gap:20px;grid-template-columns:minmax(0,1fr) 170px}
+  .step:nth-child(even){grid-template-columns:170px minmax(0,1fr)}
+  .ph{max-width:170px;border-width:5px;border-radius:20px;box-shadow:none}
+  .end{display:none}
+  .step:nth-child(even) .fig{order:-1}
+  .step.wide{grid-template-columns:minmax(0,1fr) 170px}
+  .pdfdoc{break-inside:avoid}
+  h2{font-size:22pt}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="bar">
+      <a class="brand" href="../"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#7fdcc6"/><path d="M18 18.6V8a2 2 0 1 0-4 0v10.6a4 4 0 1 0 4 0Z" fill="none" stroke="#062a24" stroke-width="2.2"/><path d="M16 12v8" stroke="#062a24" stroke-width="2.2" stroke-linecap="round"/></svg>HACCP Pocket</a>
+      <a class="back" href="../">← Torna al sito</a>
+    </div>
+    <span class="eyebrow">Tutorial · Bolle e fatture</span>
+    <h1>Bolle e fatture: dalla consegna al registro, in sette passi.</h1>
+    <p class="lead">Come registrare un DDT o una fattura, collegare lotti e scadenze ai prodotti, ritrovare un lotto in un secondo e stampare il registro dei documenti per il controllo.</p>
+    <div class="btns">
+      <a class="btn btn-pri" href="Tutorial-bolle-e-fatture.pdf" download="Tutorial-bolle-e-fatture.pdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 21h16"/></svg>Scarica il PDF</a>
+      <button class="btn btn-ghost" type="button" id="stampa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/></svg>Stampa</button>
+    </div>
+    <ol class="toc">
+      <li><a href="#p1"><b>1</b>Nuovo documento</a></li><li><a href="#p2"><b>2</b>Dati e ricevimento</a></li><li><a href="#p3"><b>3</b>Prodotti e lotti</a></li><li><a href="#p4"><b>4</b>Salva</a></li><li><a href="#p5"><b>5</b>Trova un lotto</a></li><li><a href="#p6"><b>6</b>Fatture da pagare</a></li><li><a href="#p7"><b>7</b>Registro in PDF</a></li>
+    </ol>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <article class="step" id="p1">
+      <div class="txt">
+        <div class="n"><span>1</span><h2>Apri «Bolle» e tocca «+ Nuovo documento»</h2></div>
+        <p>Nella barra in basso tocca <b>Bolle</b>. Vedi tutti i documenti ricevuti, filtrabili per fornitore e per tipo, e in alto quante fatture sono ancora da pagare.</p>
+        <p>Quando arriva il fornitore, tocca <b>+ Nuovo documento</b>.</p>
+      </div>
+      <div class="fig"><div class="ph"><img src="d1-elenco.jpg" alt="Schermata Bolle e fatture con l'elenco dei documenti e il pulsante Nuovo documento" width="585" height="1266"></div></div>
+    </article>
+
+    <article class="step" id="p2">
+      <div class="txt">
+        <div class="n"><span>2</span><h2>Scrivi i dati del documento e del ricevimento</h2></div>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg><span><b>Tipo</b> (DDT o Fattura), <b>numero</b> e <b>data</b> come sul foglio.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg><span><b>Fornitore</b>: scegli dall'elenco. Se è nuovo, l'app lo aggiunge all'archivio fornitori.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg><span>Per le fatture: <b>totale</b> e <b>scadenza del pagamento</b>.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg><span><b>Ricevimento merce</b>: temperatura all'arrivo, merce conforme o respinta, e in quale frigo la metti.</span></li>
+        </ul>
+        <p class="tip"><b>Dal manuale:</b> su ogni DDT controlla fornitore, data, prodotti, quantità e numero di lotto.</p>
+      </div>
+      <div class="fig"><div class="ph"><img src="d2-dati.jpg" alt="Modulo Controlla e conferma con tipo, numero, data, fornitore e ricevimento merce" width="585" height="1266" loading="lazy"></div></div>
+    </article>
+
+    <article class="step" id="p3">
+      <div class="txt">
+        <div class="n"><span>3</span><h2>Aggiungi i prodotti con lotto e scadenza</h2></div>
+        <p>Tocca <b>+ Riga</b> per ogni prodotto della bolla e scrivi <b>prodotto</b>, <b>lotto</b>, <b>quantità</b> e <b>scadenza</b>.</p>
+        <p>Le righe spuntate diventano alimenti in uso, collegati a questo documento. Se la bolla non riporta la scadenza, prendila dall'etichetta.</p>
+      </div>
+      <div class="fig"><div class="ph"><img src="d3-prodotti.jpg" alt="Righe prodotto con lotto, quantità e scadenza" width="585" height="1266" loading="lazy"></div></div>
+    </article>
+
+    <article class="step" id="p4">
+      <div class="txt">
+        <div class="n"><span>4</span><h2>Salva: documento in archivio, prodotti negli alimenti</h2></div>
+        <p>Tocca <b>Salva documento</b>. La bolla compare nell'elenco e, aprendola, vedi i <b>prodotti collegati</b> con lotto e giorni che mancano alla scadenza.</p>
+        <p>Gli stessi prodotti sono già in <b>Alimenti</b>, con il link alla bolla da cui arrivano. L'app ti avvisa prima che scadano.</p>
+      </div>
+      <div class="fig"><div class="ph"><img src="d5-dettaglio.jpg" alt="Dettaglio del DDT con i prodotti collegati e le scadenze" width="585" height="1266" loading="lazy"></div></div>
+    </article>
+
+    <article class="step" id="p5">
+      <div class="txt">
+        <div class="n"><span>5</span><h2>Ritrova un lotto in un secondo</h2></div>
+        <p>Dalla Home apri <b>Tracciabilità</b> e scrivi il lotto, il prodotto o il fornitore. Vedi tutta la catena: <b>fornitore → documento → prodotto → dove si trova adesso</b>.</p>
+        <p>In caso di allerta, il pulsante <b>Blocca lotto e apri richiamo</b> blocca il prodotto e prepara la non conformità.</p>
+      </div>
+      <div class="fig"><div class="ph"><img src="d7-tracciabilita.jpg" alt="Tracciabilità del lotto L26303 dal fornitore allo stato attuale" width="585" height="1266" loading="lazy"></div></div>
+    </article>
+
+    <article class="step" id="p6">
+      <div class="txt">
+        <div class="n"><span>6</span><h2>Tieni d'occhio le fatture da pagare</h2></div>
+        <p>Le fatture con la scadenza del pagamento compaiono come <b>da pagare</b>, e la Home ti avvisa quando sono scadute.</p>
+        <p>Quando paghi, apri la fattura e tocca <b>Segna pagata</b>. Con <b>Modifica</b> correggi i dati in qualsiasi momento.</p>
+      </div>
+      <div class="fig"><div class="ph"><img src="d8-fattura.jpg" alt="Fattura da pagare con il pulsante Segna pagata" width="585" height="1266" loading="lazy"></div></div>
+    </article>
+
+    <article class="step wide" id="p7">
+      <div class="txt">
+        <div class="n"><span>7</span><h2>Stampa il registro dei documenti in PDF</h2></div>
+        <p>Dalla Home apri <b>Esporta</b>, scegli il mese, tocca <b>Bolle e fatture</b> e poi <b>Scarica PDF</b>. Ottieni il <b>Registro documenti di acquisto</b>, con data, fornitore, prodotti e lotti, conformità e pagamento, e lo spazio per la firma.</p>
+        <p>Il <b>Pacchetto ispezione</b> lo include insieme a tutti gli altri registri del mese.</p>
+      </div>
+      <div class="fig"><div class="ph"><img src="d9-esporta.jpg" alt="Schermata Esporta registri con Bolle e fatture selezionato" width="585" height="1266" loading="lazy"></div></div>
+
+    </article>
+      <div class="pdfdoc" aria-label="Esempio di registro in PDF"><img src="registro.jpg" alt="Esempio del PDF Registro documenti di acquisto (DDT e fatture) di ottobre 2026" width="1684" height="1191" loading="lazy"></div>
+
+    <div class="end">
+      <div><h2>Vuoi provarlo sul tuo locale?</h2><p>Scrivici: te lo impostiamo con i tuoi fornitori.</p></div>
+      <a class="btn btn-pri" href="https://wa.me/393206111356?text=Ciao%20Andrea%2C%20vorrei%20provare%20HACCP%20Pocket" target="_blank" rel="noopener">Scrivici su WhatsApp</a>
+    </div>
+  </div>
+</main>
+<footer>HACCP Pocket · Andrea Grandoni e Sandro Cini · Pontedera (PI) · Dati di esempio di un locale fittizio</footer>
+<script>
+document.getElementById("stampa").addEventListener("click",function(){try{window.print()}catch(e){}});
+</script>
+
+</body>
+</html>
