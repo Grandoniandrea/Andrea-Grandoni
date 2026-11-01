@@ -75,9 +75,23 @@
         mix-blend-mode:screen;opacity:.9;
         background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .95 0 0 0 0 .82 0 0 0 0 .5 0 0 0 .35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),linear-gradient(180deg,#f6dc98 0%,#d4af5f 50%,#7a5e26 100%);
         -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+
+    /* LINGUA */
+    .lang{position:fixed;z-index:20;top:max(12px,env(safe-area-inset-top));left:12px;display:flex;gap:6px;padding:5px;border-radius:999px;
+          background:rgba(0,0,0,.55);border:1px solid var(--line);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+    .lang button{all:unset;cursor:pointer;display:block;width:34px;height:24px;border-radius:6px;overflow:hidden;opacity:.45;
+          outline:2px solid transparent;outline-offset:1px;transition:opacity .2s,outline-color .2s}
+    .lang button svg{display:block;width:100%;height:100%}
+    .lang button[aria-pressed="true"]{opacity:1;outline-color:var(--gold)}
+    .lang button:focus-visible{outline-color:var(--gold-2)}
   </style>
 </head>
 <body>
+
+  <nav class="lang" aria-label="Lingua / Language">
+    <button type="button" data-lang="it" aria-pressed="true" aria-label="Italiano" title="Italiano"><svg viewBox="0 0 3 2" aria-hidden="true"><rect width="1" height="2" fill="#009246"/><rect x="1" width="1" height="2" fill="#fff"/><rect x="2" width="1" height="2" fill="#ce2b37"/></svg></button>
+    <button type="button" data-lang="en" aria-pressed="false" aria-label="English" title="English"><svg viewBox="0 0 60 40" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><clipPath id="ukt"><path d="M30,20h30v20zv20h-30zh-30v-20zv-20h30z"/></clipPath><rect width="60" height="40" fill="#012169"/><path d="M0,0L60,40M60,0L0,40" stroke="#fff" stroke-width="8"/><path d="M0,0L60,40M60,0L0,40" clip-path="url(#ukt)" stroke="#C8102E" stroke-width="5"/><path d="M30,0v40M0,20h60" stroke="#fff" stroke-width="12"/><path d="M30,0v40M0,20h60" stroke="#C8102E" stroke-width="7"/></svg></button>
+  </nav>
 
   <header class="hero">
     <img src="assets/andrea-grandoni-dj.jpg" alt="Andrea Grandoni con le cuffie" />
@@ -85,7 +99,7 @@
     <div class="hero-copy">
       <div class="kicker">DJ &amp; Producer</div>
       <h1>GRANDONI</h1>
-      <p class="name">Andrea Grandoni · dal 1987 in consolle</p>
+      <p class="name" data-i18n="since">Andrea Grandoni · dal 1987 in consolle</p>
       <p class="tags">House · Tech House · Afro-Disco · Golden Tech</p>
     </div>
   </header>
@@ -93,25 +107,25 @@
   <main class="wrap">
 
     <div class="actions">
-      <a class="btn primary" href="https://wa.me/393206111356?text=Ciao%20Andrea%2C%20vorrei%20informazioni%20per%20una%20serata">
+      <a class="btn primary" id="wa" href="https://wa.me/393206111356?text=Ciao%20Andrea%2C%20vorrei%20informazioni%20per%20una%20serata">
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.7.3-.2.3-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.9 1.6.7 2.3.8 3.1.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1 0-.3-.1-.5-.2z"/></svg>
-        Prenota su WhatsApp
+        <span data-i18n="wa">Prenota su WhatsApp</span>
       </a>
       <a class="btn" href="tel:+393206111356">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 3h3l2 5-2 1.5a12 12 0 0 0 6.5 6.5L16 14l5 2v3a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2z"/></svg>
-        Chiama
+        <span data-i18n="call">Chiama</span>
       </a>
-      <a class="btn" href="mailto:grandoniandrea1@gmail.com?subject=Richiesta%20booking%20GRANDONI">
+      <a class="btn" id="mail" href="mailto:grandoniandrea1@gmail.com?subject=Richiesta%20booking%20GRANDONI">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
         Email
       </a>
       <a class="btn save" href="contatto.vcf" download="Andrea-Grandoni.vcf">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10" cy="8" r="4"/><path d="M3 20a7 7 0 0 1 14 0M19 8v6M16 11h6"/></svg>
-        Salva il mio contatto
+        <span data-i18n="save">Salva il mio contatto</span>
       </a>
     </div>
 
-    <h2>Seguimi &amp; ascolta</h2>
+    <h2 data-i18n="follow">Seguimi &amp; ascolta</h2>
     <div class="links">
       <a class="link" href="https://www.instagram.com/grandhouse71">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
@@ -123,14 +137,14 @@
       </a>
       <a class="link" href="https://remix.audio/profile/grandhouse">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-        <span><b>I miei remix su Remix Audio</b><small>Musica italiana · selezionati da Radio Italia</small></span><span class="arrow">›</span>
+        <span><b data-i18n="remixT">I miei remix su Remix Audio</b><small data-i18n="remixS">Musica italiana · selezionati da Radio Italia</small></span><span class="arrow">›</span>
       </a>
     </div>
 
-    <h2>Biografia</h2>
-    <p><strong>Andrea Grandoni</strong> nasce a Teramo e cresce a Pisa, dove intorno ai 15 anni comincia a entrare nel mondo delle discoteche. Sviluppato il suo talento per la musica, dal <strong style="color:var(--gold-2)">1987</strong> a oggi viene chiamato a suonare nei club più famosi d’Italia.</p>
+    <h2 data-i18n="bio">Biografia</h2>
+    <p data-i18n="bio1"><strong>Andrea Grandoni</strong> nasce a Teramo e cresce a Pisa, dove intorno ai 15 anni comincia a entrare nel mondo delle discoteche. Sviluppato il suo talento per la musica, dal <strong style="color:var(--gold-2)">1987</strong> a oggi viene chiamato a suonare nei club più famosi d’Italia.</p>
 
-    <h3 class="sub">Ha suonato in</h3>
+    <h3 class="sub" data-i18n="played">Ha suonato in</h3>
     <ul class="clubs">
       <li><b>Crazy Pizza</b><small>Forte dei Marmi</small></li>
       <li><b>Twiga Beach Club</b><small>Marina di Pietrasanta</small></li>
@@ -140,7 +154,7 @@
       <li><b>Bussola</b><small>Lido di Camaiore</small></li>
       <li><b>Canniccia</b><small>Forte dei Marmi</small></li>
       <li><b>Sunset Beach Club</b><small>Cinquale</small></li>
-      <li><b>Decò</b><small>Capoliveri, Isola d’Elba</small></li>
+      <li><b>Decò</b><small data-i18n="elba">Capoliveri, Isola d’Elba</small></li>
       <li><b>Tinello “Butterfly”</b><small>Marina di Campo</small></li>
       <li><b>Crocodile</b><small>Marciano della Chiana</small></li>
       <li><b>Caino Cafè Contemporaneo</b><small>Pisa</small></li>
@@ -165,23 +179,62 @@
       <li><b>Tartana</b><small>Follonica</small></li>
       <li><b>Pia Para Ti</b><small>Marina di Pisa</small></li>
     </ul>
-    <p class="muted" style="margin-top:10px">…e tanti altri locali.</p>
+    <p class="muted" style="margin-top:10px" data-i18n="more">…e tanti altri locali.</p>
 
-    <p>In <strong style="color:var(--gold-2)">40 anni di carriera</strong> e di esperienza acustica è diventato un DJ ammirato per il suo sound, che sa adattare alle esigenze di ogni locale.</p>
-    <p class="muted">Negli anni si affaccia al mondo delle produzioni discografiche, lavorando su diverse tracce digitali oggi in vendita sui portali musicali online. In studio, con Logic Pro, ha creato il <strong style="color:var(--gold-2)">Golden Tech</strong>, il suo genere, nato con <em>“Candles in Gold”</em>.</p>
-    <p class="muted">Su <strong>Remix Audio</strong> produce remix di <strong>musica italiana</strong> che vengono selezionati da <strong style="color:var(--gold-2)">Radio Italia</strong>: brani pensati per la radio, che portano il suo sound a un pubblico sempre più ampio.</p>
+    <p data-i18n="bio2">In <strong style="color:var(--gold-2)">40 anni di carriera</strong> e di esperienza acustica è diventato un DJ ammirato per il suo sound, che sa adattare alle esigenze di ogni locale.</p>
+    <p class="muted" data-i18n="bio3">Negli anni si affaccia al mondo delle produzioni discografiche, lavorando su diverse tracce digitali oggi in vendita sui portali musicali online. In studio, con Logic Pro, ha creato il <strong style="color:var(--gold-2)">Golden Tech</strong>, il suo genere, nato con <em>“Candles in Gold”</em>.</p>
+    <p class="muted" data-i18n="bio4">Su <strong>Remix Audio</strong> produce remix di <strong>musica italiana</strong> che vengono selezionati da <strong style="color:var(--gold-2)">Radio Italia</strong>: brani pensati per la radio, che portano il suo sound a un pubblico sempre più ampio.</p>
 
-    <h2>Per il tuo evento</h2>
+    <h2 data-i18n="event">Per il tuo evento</h2>
     <div class="chips">
-      <span class="chip">Club &amp; locali</span>
-      <span class="chip">Matrimoni</span>
-      <span class="chip">Feste private</span>
-      <span class="chip">Eventi aziendali</span>
-      <span class="chip">Produzioni &amp; remix</span>
+      <span class="chip" data-i18n="c1">Club &amp; locali</span>
+      <span class="chip" data-i18n="c2">Matrimoni</span>
+      <span class="chip" data-i18n="c3">Feste private</span>
+      <span class="chip" data-i18n="c4">Eventi aziendali</span>
+      <span class="chip" data-i18n="c5">Produzioni &amp; remix</span>
     </div>
 
     <div class="gold-line"></div>
     <footer>© GRANDONI · Andrea Grandoni — DJ &amp; Producer</footer>
   </main>
+
+  <script>
+  (function(){
+    var EN={
+      since:'Andrea Grandoni · behind the decks since 1987',
+      wa:'Book on WhatsApp', call:'Call', save:'Save my contact',
+      follow:'Follow &amp; listen',
+      remixT:'My remixes on Remix Audio', remixS:'Italian music · selected by Radio Italia',
+      bio:'Biography',
+      bio1:'<strong>Andrea Grandoni</strong> was born in Teramo and grew up in Pisa, where at around 15 he started stepping into the club scene. Having developed his talent for music, since <strong style="color:var(--gold-2)">1987</strong> he has been booked to play in some of the most famous clubs in Italy.',
+      played:'Played at', elba:'Capoliveri, Elba Island', more:'…and many more venues.',
+      bio2:'With <strong style="color:var(--gold-2)">40 years of career</strong> and acoustic experience, he has become a DJ admired for his sound, which he knows how to adapt to the needs of every venue.',
+      bio3:'Over the years he moved into music production, working on several digital tracks now on sale on online music stores. In the studio, with Logic Pro, he created <strong style="color:var(--gold-2)">Golden Tech</strong>, his own genre, born with <em>“Candles in Gold”</em>.',
+      bio4:'On <strong>Remix Audio</strong> he produces remixes of <strong>Italian music</strong> that get selected by <strong style="color:var(--gold-2)">Radio Italia</strong>: tracks made for radio, bringing his sound to an ever wider audience.',
+      event:'For your event', c1:'Clubs &amp; venues', c2:'Weddings', c3:'Private parties', c4:'Corporate events', c5:'Productions &amp; remixes'
+    };
+    var IT={}, nodes=document.querySelectorAll('[data-i18n]');
+    nodes.forEach(function(n){ IT[n.getAttribute('data-i18n')]=n.innerHTML; });
+    var wa=document.getElementById('wa'), mail=document.getElementById('mail'), img=document.querySelector('.hero img');
+    var LINK={
+      it:{wa:wa.href, mail:mail.href, alt:img.alt},
+      en:{wa:'https://wa.me/393206111356?text=Hi%20Andrea%2C%20I%27d%20like%20some%20info%20about%20booking%20you%20for%20an%20event',
+          mail:'mailto:grandoniandrea1@gmail.com?subject=GRANDONI%20booking%20request', alt:'Andrea Grandoni wearing headphones'}
+    };
+    function set(lang){
+      var D=lang==='en'?EN:IT;
+      nodes.forEach(function(n){ var k=n.getAttribute('data-i18n'); if(D[k]) n.innerHTML=D[k]; });
+      wa.href=LINK[lang].wa; mail.href=LINK[lang].mail; img.alt=LINK[lang].alt;
+      document.documentElement.lang=lang;
+      document.querySelectorAll('.lang button').forEach(function(b){ b.setAttribute('aria-pressed', b.getAttribute('data-lang')===lang); });
+      try{ localStorage.setItem('lang',lang); }catch(e){}
+    }
+    document.querySelectorAll('.lang button').forEach(function(b){ b.addEventListener('click',function(){ set(b.getAttribute('data-lang')); }); });
+    var start='it';
+    try{ var q=new URLSearchParams(location.search).get('lang'); var s=localStorage.getItem('lang');
+         start = q==='en'||q==='it' ? q : (s || ((navigator.language||'it').toLowerCase().indexOf('it')===0 ? 'it' : 'en')); }catch(e){}
+    if(start!=='it') set(start);
+  })();
+  </script>
 </body>
 </html>
