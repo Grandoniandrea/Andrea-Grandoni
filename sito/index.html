@@ -13,20 +13,21 @@
 <link rel="icon" href="../assets/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Josefin+Sans:ital,wght@0,100;0,200;0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#000;--ink:#f3efe6;--muted:#a9a397;--line:rgba(212,175,95,.26);--gold:#d4af5f;--gold-2:#f1d38c;--gold-3:#7a5e26;--card:#0d0c0a;--card-2:#15130f;--max:1120px}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Inter,system-ui,-apple-system,sans-serif;overflow-x:hidden}
+body{margin:0;background:var(--bg);color:var(--ink);font:300 16px/1.7 "Josefin Sans",system-ui,-apple-system,sans-serif;letter-spacing:.02em;overflow-x:hidden}
 a{color:inherit}
 img{max-width:100%;display:block}
 .container{max-width:var(--max);margin:0 auto;padding:0 20px}
 .gold{background:linear-gradient(180deg,var(--gold-2),var(--gold) 70%);-webkit-background-clip:text;background-clip:text;color:transparent}
-.kicker{font-size:.72rem;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);font-weight:600}
-h1,h2,h3{font-family:"Cormorant Garamond",serif;font-weight:600;line-height:1.05;margin:0}
-h2{font-size:clamp(2rem,5vw,3.2rem);margin:.5rem 0 1rem}
-h3{font-size:1.45rem;color:var(--gold-2)}
+.kicker{font-size:.74rem;letter-spacing:.45em;text-transform:uppercase;color:var(--gold);font-weight:300}
+h1,h2,h3{font-family:"Josefin Sans",sans-serif;font-weight:200;line-height:1.1;margin:0;text-transform:uppercase;letter-spacing:.14em}
+strong,b{font-weight:400}
+h2{font-size:clamp(1.7rem,4.2vw,2.8rem);margin:.6rem 0 1.1rem}
+h3{font-size:1rem;color:var(--gold-2);font-weight:400;letter-spacing:.2em}
 p{margin:.5rem 0}
 .muted{color:var(--muted)}
 section{padding:clamp(64px,10vw,110px) 0;position:relative}
@@ -36,8 +37,8 @@ section{padding:clamp(64px,10vw,110px) 0;position:relative}
 .nav{position:fixed;inset:0 0 auto 0;z-index:50;transition:background .3s,border-color .3s;border-bottom:1px solid transparent}
 .nav.solid{background:rgba(0,0,0,.82);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-color:var(--line)}
 .nav .container{display:flex;align-items:center;gap:20px;height:64px}
-.logo{font-family:"Cormorant Garamond",serif;font-weight:600;font-size:1.4rem;letter-spacing:.12em;text-decoration:none}
-.menu{display:flex;gap:22px;margin-left:auto;font-size:.9rem}
+.logo{font-family:"Josefin Sans",sans-serif;font-weight:300;font-size:1.15rem;letter-spacing:.35em;text-decoration:none}
+.menu{display:flex;gap:24px;margin-left:auto;font-size:.78rem;text-transform:uppercase;letter-spacing:.2em}
 .menu a{text-decoration:none;opacity:.78;transition:opacity .2s}
 .menu a:hover{opacity:1;color:var(--gold-2)}
 .nav .cta{margin-left:8px}
@@ -52,7 +53,7 @@ section{padding:clamp(64px,10vw,110px) 0;position:relative}
 }
 
 /* BUTTONS */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:50px;padding:12px 22px;border-radius:14px;text-decoration:none;font-weight:600;font-size:.95rem;border:1px solid var(--line);background:var(--card);transition:transform .15s,border-color .2s;cursor:pointer;font-family:inherit;color:var(--ink)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:50px;padding:12px 22px;border-radius:14px;text-decoration:none;font-weight:400;font-size:.82rem;text-transform:uppercase;letter-spacing:.18em;border:1px solid var(--line);background:var(--card);transition:transform .15s,border-color .2s;cursor:pointer;font-family:inherit;color:var(--ink)}
 .btn:hover{transform:translateY(-1px);border-color:var(--gold)}
 .btn.primary{background:linear-gradient(180deg,var(--gold-2),var(--gold));color:#141005;border:0}
 .btn.small{min-height:40px;padding:8px 16px;font-size:.85rem;border-radius:11px}
@@ -66,7 +67,7 @@ section{padding:clamp(64px,10vw,110px) 0;position:relative}
 .hero::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#000 0 30%,rgba(0,0,0,.6) 55%,rgba(0,0,0,.1) 85%),linear-gradient(180deg,rgba(0,0,0,.5) 0,transparent 25%,transparent 55%,#000 98%)}
 .dj{position:absolute;z-index:-1;left:4%;top:14%;font-family:Anton,Impact,sans-serif;font-size:clamp(120px,22vw,300px);line-height:.9;mix-blend-mode:screen;opacity:.16;
   background:linear-gradient(180deg,#f6dc98,#d4af5f 50%,#7a5e26);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;pointer-events:none;user-select:none}
-.hero h1{font-size:clamp(3.4rem,11vw,8rem);letter-spacing:.06em;margin:.4rem 0 .5rem}
+.hero h1{font-size:clamp(2.6rem,9.5vw,7rem);font-weight:100;letter-spacing:.22em;margin:.5rem 0 .6rem}
 .hero .lead{font-size:clamp(1.05rem,2vw,1.3rem);max-width:560px;color:var(--ink);opacity:.92}
 .hero .tags{margin-top:12px;color:var(--muted);letter-spacing:.06em;font-size:.9rem}
 @media(max-width:700px){.hero .bg img{right:-35%}.hero::after{background:linear-gradient(90deg,rgba(0,0,0,.9) 0 25%,rgba(0,0,0,.4) 70%,transparent),linear-gradient(180deg,rgba(0,0,0,.5) 0,transparent 25%,transparent 40%,#000 92%)}}
@@ -74,7 +75,7 @@ section{padding:clamp(64px,10vw,110px) 0;position:relative}
 /* STATS */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-top:-30px;position:relative;z-index:2}
 .stat{background:var(--card);padding:22px 18px;text-align:center}
-.stat b{display:block;font-family:"Cormorant Garamond",serif;font-size:2.4rem;line-height:1}
+.stat b{display:block;font-family:"Josefin Sans",sans-serif;font-weight:200;font-size:2.1rem;line-height:1.1;letter-spacing:.06em}
 .stat small{color:var(--muted);font-size:.82rem}
 @media(max-width:700px){.stats{grid-template-columns:1fr 1fr}}
 
@@ -95,9 +96,9 @@ section{padding:clamp(64px,10vw,110px) 0;position:relative}
 .golden{background:radial-gradient(80% 70% at 85% 30%,rgba(212,175,95,.14),transparent 70%),#050504}
 .formula{display:grid;gap:12px}
 .formula div{display:flex;align-items:center;gap:16px;padding:16px 18px;border-radius:14px;background:var(--card);border:1px solid var(--line)}
-.formula b{font-family:"Cormorant Garamond",serif;font-size:1.25rem;color:var(--gold-2);min-width:110px}
+.formula b{font-family:"Josefin Sans",sans-serif;font-size:.85rem;font-weight:400;text-transform:uppercase;letter-spacing:.2em;color:var(--gold-2);min-width:110px}
 .formula span{color:var(--muted);font-size:.93rem}
-.quote{font-family:"Cormorant Garamond",serif;font-style:italic;font-size:clamp(1.4rem,3vw,1.9rem);line-height:1.3;border-left:2px solid var(--gold);padding-left:20px;margin:24px 0}
+.quote{font-family:"Josefin Sans",sans-serif;font-style:italic;font-weight:300;font-size:clamp(1.2rem,2.6vw,1.6rem);line-height:1.3;border-left:2px solid var(--gold);padding-left:20px;margin:24px 0}
 
 /* PLAYER */
 .player{padding:22px;border-radius:20px;border:1px solid var(--line);background:radial-gradient(120% 140% at 0% 0%,rgba(212,175,95,.16),transparent 60%),var(--card)}
@@ -108,7 +109,7 @@ section{padding:clamp(64px,10vw,110px) 0;position:relative}
 .player.playing .pbtn{animation:pulse 2s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(212,175,95,.5)}70%{box-shadow:0 0 0 14px rgba(212,175,95,0)}100%{box-shadow:0 0 0 0 rgba(212,175,95,0)}}
 .pinfo{flex:1;min-width:0}
-.ptitle{display:flex;align-items:center;gap:8px;font-weight:600}
+.ptitle{display:flex;align-items:center;gap:8px;font-weight:400;text-transform:uppercase;letter-spacing:.12em}
 .ptitle small{display:block;color:var(--muted);font-weight:400;font-size:.82rem}
 .eq{display:flex;align-items:flex-end;gap:2px;height:16px;margin-left:auto}
 .eq i{width:3px;height:30%;background:var(--gold);border-radius:1px}
@@ -123,7 +124,7 @@ section{padding:clamp(64px,10vw,110px) 0;position:relative}
 .link{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;background:var(--card);border:1px solid var(--line);text-decoration:none;transition:border-color .2s}
 .link:hover{border-color:var(--gold)}
 .link svg{width:22px;height:22px;color:var(--gold);flex:none}
-.link b{display:block;font-weight:600}
+.link b{display:block;font-weight:400;text-transform:uppercase;letter-spacing:.12em;font-size:.88rem}
 .link small{color:var(--muted)}
 .link .arrow{margin-left:auto;color:var(--gold)}
 
@@ -137,7 +138,7 @@ section{padding:clamp(64px,10vw,110px) 0;position:relative}
 @media(max-width:860px){.steps{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.steps{grid-template-columns:1fr}}
 .step{padding:22px;border-radius:18px;border:1px solid var(--line);background:var(--card);counter-increment:s}
-.step::before{content:"0" counter(s);font-family:"Cormorant Garamond",serif;font-size:2rem;color:var(--gold);display:block;line-height:1;margin-bottom:10px}
+.step::before{content:"0" counter(s);font-family:"Josefin Sans",sans-serif;font-size:2rem;color:var(--gold);display:block;line-height:1;margin-bottom:10px}
 .step p{color:var(--muted);font-size:.93rem}
 
 /* BIO */
@@ -147,7 +148,7 @@ section{padding:clamp(64px,10vw,110px) 0;position:relative}
 .timeline{margin-top:22px;border-left:1px solid var(--line);padding-left:22px}
 .timeline div{position:relative;margin:0 0 18px}
 .timeline div::before{content:"";position:absolute;left:-27px;top:.5em;width:9px;height:9px;border-radius:50%;background:var(--gold)}
-.timeline b{color:var(--gold-2);font-family:"Cormorant Garamond",serif;font-size:1.2rem}
+.timeline b{color:var(--gold-2);font-family:"Josefin Sans",sans-serif;font-size:1.2rem}
 
 /* CONTACT */
 .contact{background:radial-gradient(70% 80% at 15% 20%,rgba(212,175,95,.12),transparent 70%),#050504}
