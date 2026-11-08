@@ -171,6 +171,14 @@ footer .logo{display:block;margin-bottom:8px}
 .reveal{opacity:0;transform:translateY(22px);transition:opacity .8s ease,transform .8s ease}
 .reveal.in{opacity:1;transform:none}
 @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.player.playing .pbtn,.player.playing .eq i{animation:none}html{scroll-behavior:auto}}
+
+/* LINGUA */
+.lang{display:flex;gap:6px;padding:4px;border-radius:999px;border:1px solid var(--line);margin-left:14px}
+.lang button{all:unset;cursor:pointer;display:block;width:30px;height:21px;border-radius:5px;overflow:hidden;opacity:.45;outline:2px solid transparent;outline-offset:1px;transition:opacity .2s,outline-color .2s}
+.lang button svg{display:block;width:100%;height:100%}
+.lang button[aria-pressed="true"]{opacity:1;outline-color:var(--gold)}
+.lang button:focus-visible{outline-color:var(--gold-2)}
+@media(max-width:860px){.lang{margin-left:auto}.burger{margin-left:8px}}
 </style>
 </head>
 <body>
@@ -187,6 +195,10 @@ footer .logo{display:block;margin-bottom:8px}
       <a href="#contatti">Contatti</a>
     </div>
     <a class="btn primary small cta" href="#contatti">Prenota</a>
+    <div class="lang" role="group" aria-label="Lingua / Language">
+      <button type="button" data-lang="it" aria-pressed="true" aria-label="Italiano" title="Italiano"><svg viewBox="0 0 3 2" aria-hidden="true"><rect width="1" height="2" fill="#009246"/><rect x="1" width="1" height="2" fill="#fff"/><rect x="2" width="1" height="2" fill="#ce2b37"/></svg></button>
+      <button type="button" data-lang="en" aria-pressed="false" aria-label="English" title="English"><svg viewBox="0 0 60 40" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><clipPath id="ukt"><path d="M30,20h30v20zv20h-30zh-30v-20zv-20h30z"/></clipPath><rect width="60" height="40" fill="#012169"/><path d="M0,0L60,40M60,0L0,40" stroke="#fff" stroke-width="8"/><path d="M0,0L60,40M60,0L0,40" clip-path="url(#ukt)" stroke="#C8102E" stroke-width="5"/><path d="M30,0v40M0,20h60" stroke="#fff" stroke-width="12"/><path d="M30,0v40M0,20h60" stroke="#C8102E" stroke-width="7"/></svg></button>
+    </div>
     <button class="burger" id="burger" aria-label="Apri il menu" aria-expanded="false">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
@@ -446,10 +458,11 @@ footer .logo{display:block;margin-bottom:8px}
     e.preventDefault();
     var f=new FormData(e.target),d=f.get('data');
     if(d){var p=d.split('-');d=p[2]+'/'+p[1]+'/'+p[0];}
-    var t='Ciao Andrea, sono '+f.get('nome')+'.\nVorrei informazioni per: '+f.get('tipo');
-    if(d) t+='\nData: '+d;
-    if(f.get('luogo')) t+='\nLuogo: '+f.get('luogo');
-    if(f.get('ospiti')) t+='\nOspiti: '+f.get('ospiti');
+    var en=window.GR_LANG==='en';
+    var t=(en?"Hi Andrea, I'm ":'Ciao Andrea, sono ')+f.get('nome')+(en?".\nI'd like info about: ":'.\nVorrei informazioni per: ')+f.get('tipo');
+    if(d) t+=(en?'\nDate: ':'\nData: ')+d;
+    if(f.get('luogo')) t+=(en?'\nPlace: ':'\nLuogo: ')+f.get('luogo');
+    if(f.get('ospiti')) t+=(en?'\nGuests: ':'\nOspiti: ')+f.get('ospiti');
     if(f.get('messaggio')) t+='\n\n'+f.get('messaggio');
     window.open('https://wa.me/393206111356?text='+encodeURIComponent(t),'_blank');
   });
@@ -469,6 +482,83 @@ footer .logo{display:block;margin-bottom:8px}
   bar.addEventListener('pointermove',function(e){if(drag)seek(e.clientX);});
   bar.addEventListener('pointerup',function(){drag=false;});
   bar.addEventListener('keydown',function(e){if(e.key==='ArrowRight')a.currentTime=Math.min(D,a.currentTime+15);if(e.key==='ArrowLeft')a.currentTime=Math.max(0,a.currentTime-15);});
+})();
+</script>
+<script>
+(function(){
+var EN={
+"Musica":"Music","Matrimoni & eventi":"Weddings & events","Contatti":"Contact","Prenota":"Book now",
+"DJ · Producer · dal 1987":"DJ · Producer · since 1987",
+"Quarant'anni di consolle, un sound che si adatta a ogni pista e un genere tutto mio: il":"Forty years behind the decks, a sound that fits every dancefloor and a genre of my own:",
+"Richiedi disponibilità":"Check availability","Ascolta il mix":"Listen to the mix",
+"in consolle da allora":"behind the decks since","anni di carriera":"years of career","club in tutta Italia":"clubs across Italy","remix selezionati":"selected remixes",
+"Il mio genere":"My genre",
+"Il Golden Tech nasce in studio, con Logic Pro, dall'incontro tra il groove fisico della tech house e il calore della musica suonata. Il primo brano è":"Golden Tech was born in the studio, with Logic Pro, where the physical groove of tech house meets the warmth of live music. The first track is",
+"Un suono pensato per il club ma anche per i momenti speciali: aperitivi al tramonto, beach club, matrimoni ed eventi di classe.":"A sound made for the club but also for special moments: sunset aperitifs, beach clubs, weddings and elegant events.",
+"Groove solido sotto, eleganza sopra.":"Solid groove below, elegance on top.",
+"Cassa calda e basso tech house a 124–125 BPM":"Warm kick and tech house bass at 124–125 BPM",
+"Armonia":"Harmony","Accordi jazzy e soul, pad morbidi e Rhodes":"Jazzy, soulful chords, soft pads and Rhodes",
+"Violino e sax che entrano nei break e sopra il drop":"Violin and sax coming in on the breaks and over the drop",
+"Colore":"Colour","Suoni che brillano senza essere aggressivi: il tocco “gold”":"Sounds that shine without being harsh: the “gold” touch",
+"Ascolta":"Listen","Il mio":"My",
+"Un assaggio di quello che porto nei club. Sotto trovi anche i remix di musica italiana che produco su Remix Audio e che vengono selezionati da Radio Italia, più le tracce digitali in vendita sui portali musicali.":"A taste of what I bring to clubs. Below you'll also find my remixes of Italian music on Remix Audio, selected by Radio Italia, plus my digital tracks on sale on online music stores.",
+"Remix su Remix Audio":"Remixes on Remix Audio","Musica italiana · selezionati da Radio Italia":"Italian music · selected by Radio Italia",
+"@grandhouse71 · serate e anteprime":"@grandhouse71 · gigs and previews",
+"Per gestori e promoter":"For venue owners and promoters","Club &":"Clubs &","locali":"venues",
+"Dalla Versilia all'Elba, da Firenze a Lignano: in 40 anni ho imparato a leggere ogni pista. Porto un set costruito sul tuo locale, sul tuo pubblico e sull'orario della serata.":"From Versilia to Elba, from Florence to Lignano: in 40 years I've learned to read every dancefloor. I bring a set built around your venue, your crowd and the time of night.",
+"Serate club":"Club nights","House e tech house da pista, con energia costruita a onde fino al picco della serata.":"Dancefloor house and tech house, with energy built in waves up to the peak of the night.",
+"Beach club & aperitivi":"Beach clubs & aperitifs","Golden Tech, Afro-Disco e deep al tramonto, poi si sale. Il sound giusto per locali eleganti.":"Golden Tech, Afro-Disco and deep at sunset, then we build up. The right sound for elegant venues.",
+"Live con musicisti":"Live with musicians","DJ set con violino e sax dal vivo: un format che trasforma la serata in uno spettacolo.":"DJ set with live violin and sax: a format that turns the night into a show.",
+"Ho suonato in":"I've played at","Decò · Elba":"Decò · Elba Island",
+"Matrimoni · feste · aziende":"Weddings · parties · corporate","Il tuo evento,":"Your event,","il tuo sound":"your sound",
+"Per un matrimonio o una festa privata non basta mettere musica: serve capire le persone, i momenti e i tempi. Ogni evento è costruito insieme a te.":"A wedding or private party needs more than just music: it takes understanding the people, the moments and the timing. Every event is built together with you.",
+"Musica dall'aperitivo alla pista, con i classici che tutti conoscono":"Music from the aperitif to the dancefloor, with the classics everyone knows",
+"Scaletta personalizzata e brani speciali per i momenti chiave":"A personalised playlist and special songs for the key moments",
+"Su richiesta, violino e sax dal vivo":"Live violin and sax on request",
+"Esperienza nella gestione dei tempi con location, catering e fotografo":"Experience coordinating timing with the venue, catering and photographer",
+"Chiedi un preventivo":"Ask for a quote","Matrimoni":"Weddings",
+"Ingresso, taglio torta, primo ballo e festa: ogni momento ha la sua musica.":"Entrance, cake cutting, first dance and party: every moment has its music.",
+"Feste private":"Private parties","Compleanni, anniversari e ricorrenze, dal lounge alla pista.":"Birthdays, anniversaries and celebrations, from lounge to dancefloor.",
+"Eventi aziendali":"Corporate events","Cene di gala, inaugurazioni e lanci con un sound elegante e su misura.":"Gala dinners, openings and launches with an elegant, tailored sound.",
+"Contatto":"Contact","Mi scrivi la data, il luogo e il tipo di evento.":"Send me the date, place and type of event.",
+"Incontro":"Meeting","Parliamo di gusti, ospiti, momenti speciali e brani da non perdere.":"We talk about tastes, guests, special moments and must-play songs.",
+"Preventivo":"Quote","Ricevi una proposta chiara, senza sorprese.":"You get a clear proposal, no surprises.",
+"La festa":"The party","Al resto penso io: tu pensi solo a divertirti.":"I take care of the rest: you just enjoy yourself.",
+"Biografia":"Biography",
+"Nato a Teramo e cresciuto a Pisa, intorno ai 15 anni entro nel mondo delle discoteche. Dal 1987 vengo chiamato a suonare nei club più famosi d'Italia.":"Born in Teramo and raised in Pisa, I stepped into the club scene at around 15. Since 1987 I've been booked to play in some of the most famous clubs in Italy.",
+"In 40 anni di carriera ho costruito un sound riconoscibile, che so adattare alle esigenze di ogni locale. In studio produco tracce digitali in vendita sui portali musicali e remix di musica italiana selezionati da Radio Italia.":"In 40 years of career I've built a recognisable sound that I adapt to the needs of every venue. In the studio I produce digital tracks on sale on online music stores and remixes of Italian music selected by Radio Italia.",
+"Anni '80":"The '80s","Le prime serate in discoteca a Pisa.":"First nights in the clubs of Pisa.",
+"Inizia la carriera nei club, dalla Versilia al Friuli.":"The club career begins, from Versilia to Friuli.",
+"Produzioni":"Productions","Tracce digitali e remix per la radio.":"Digital tracks and remixes for radio.",
+"Oggi":"Today","Nasce il Golden Tech con “Candles in Gold”.":"Golden Tech is born with “Candles in Gold”.",
+"Parliamo della":"Let's talk about","tua serata":"your night",
+"Compila il modulo: si apre WhatsApp con il messaggio già pronto. Rispondo in giornata.":"Fill in the form: WhatsApp opens with your message ready. I reply the same day.",
+"Chiama":"Call","Salva il mio contatto":"Save my contact","Aggiungilo alla rubrica":"Add it to your contacts",
+"Nome":"Name","Tipo di evento":"Type of event","Matrimonio":"Wedding","Festa privata":"Private party","Evento aziendale":"Corporate event","Serata in club / locale":"Club / venue night","Altro":"Other",
+"Data":"Date","Luogo":"Place","Numero di ospiti (circa)":"Number of guests (approx.)","Messaggio":"Message","Invia su WhatsApp":"Send on WhatsApp",
+"© GRANDONI · Andrea Grandoni — DJ & Producer ·":"© GRANDONI · Andrea Grandoni — DJ & Producer ·","Biglietto da visita":"Business card",
+"Tech House · club set":"Tech House · club set"
+};
+var PH={"Città o location":"City or venue","es. 120":"e.g. 120","Raccontami cosa hai in mente: orari, genere, musicisti dal vivo…":"Tell me what you have in mind: times, genre, live musicians…"};
+var nodes=[],w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),n;
+while(n=w.nextNode()){ if(n.parentNode.closest('script,style'))continue; var k=n.nodeValue.replace(/\s+/g,' ').trim(); if(EN[k]) nodes.push({n:n,it:n.nodeValue,en:n.nodeValue.replace(n.nodeValue.trim(),EN[k])}); }
+var phs=[].slice.call(document.querySelectorAll('[placeholder]')).map(function(e){return {e:e,it:e.placeholder};});
+var fab=document.querySelector('.fab'), fabIT=fab.href, fabEN='https://wa.me/393206111356?text='+encodeURIComponent("Hi Andrea, I'd like some info about booking you for an event");
+var mail=document.querySelector('a[href^="mailto:"]'), mailIT=mail.href, mailEN='mailto:grandoniandrea1@gmail.com?subject=GRANDONI%20booking%20request';
+window.GR_LANG='it';
+function set(l){
+  nodes.forEach(function(o){o.n.nodeValue=l==='en'?o.en:o.it;});
+  phs.forEach(function(o){o.e.placeholder=l==='en'?(PH[o.it]||o.it):o.it;});
+  fab.href=l==='en'?fabEN:fabIT; mail.href=l==='en'?mailEN:mailIT;
+  document.documentElement.lang=l; window.GR_LANG=l;
+  document.querySelectorAll('.lang button').forEach(function(b){b.setAttribute('aria-pressed',b.getAttribute('data-lang')===l);});
+  try{localStorage.setItem('lang',l);}catch(e){}
+}
+document.querySelectorAll('.lang button').forEach(function(b){b.addEventListener('click',function(){set(b.getAttribute('data-lang'));});});
+var start='it';
+try{var q=new URLSearchParams(location.search).get('lang'),st=localStorage.getItem('lang');
+  start=q==='en'||q==='it'?q:(st||((navigator.language||'it').toLowerCase().indexOf('it')===0?'it':'en'));}catch(e){}
+if(start!=='it')set(start);
 })();
 </script>
 </body>
