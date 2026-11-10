@@ -6,20 +6,20 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Giro">
-<meta name="theme-color" content="#14181d">
+<meta name="theme-color" content="#1b1d22">
 <title>Giro Chiamate</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
 /* Layout: mappa a tutto schermo, foglio dal basso con ricerca in cima (come un navigatore da giri) */
 :root{
   --bg:#f4f6f8; --sheet:#ffffff; --raised:#eef1f4; --fg:#151a20; --muted:#647080; --line:#dde2e8;
-  --accent:#1c8f63; --accent-fg:#ffffff; --accent-soft:#dff3ea; --warn:#c2620f; --done:#98a2ad; --danger:#c33b3b;
+  --accent:#2f5bea; --accent-fg:#ffffff; --accent-soft:#e3e9ff; --warn:#c2620f; --done:#98a2ad; --danger:#c33b3b;
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root{
-  --bg:#0e1115; --sheet:#1a1e24; --raised:#252a31; --fg:#eef1f4; --muted:#949eaa; --line:#2f353d;
-  --accent:#3cc48d; --accent-fg:#06150e; --accent-soft:#183528; --warn:#f0a050; --done:#5d6672; --danger:#ef6b6b; color-scheme:dark}}
+  --bg:#0f1115; --sheet:#1b1d22; --raised:#262931; --fg:#eef1f4; --muted:#949eaa; --line:#2f353d;
+  --accent:#5b86ff; --accent-fg:#ffffff; --accent-soft:#1f2a47; --warn:#f0a050; --done:#5d6672; --danger:#ef6b6b; color-scheme:dark}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;overflow:hidden}
 body{background:var(--bg);color:var(--fg);font:16px/1.35 var(--font)}
@@ -146,7 +146,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 <script>
 const $ = s => document.querySelector(s);
 const KEY='giro-chiamate-v2', GEO='giro-geocache-v1';
-const COLORS=['#1c8f63','#3a7bd5','#8a5cd6','#d4507a','#e08a1e','#2aa6b3'];
+const COLORS=['#4f7cff','#2bb39a','#8a5cd6','#d4507a','#e08a1e','#2aa6b3'];
 const DEF={start:null, stops:[], order:[], legs:[], geom:null, km:0, min:0, est:false, opt:false,
   ora:'', sosta:5, ritorno:false, nav:'apple', comune:'', nextId:1};
 let S = Object.assign({}, DEF, load()||{});
@@ -324,6 +324,7 @@ function render(){
   if(view.name==='settings') return renderSettings();
   if(view.name==='paste') return renderPaste();
   if(view.name==='fail') return renderFail();
+  if(view.name==='import') return renderImport();
   // elenco
   const list=S.opt?S.order.map(byId):S.stops;
   const E=S.opt?etas():[];
@@ -396,6 +397,26 @@ const REASONS=['Non presente','Non risponde al telefono','Indirizzo sbagliato','
 function renderFail(){ const s=byId(view.id);
   $('#body').innerHTML=`<div class="label"><span>Perché non è riuscita?</span></div><div class="t" style="font-weight:700;font-size:1.15rem;padding-bottom:8px">${esc(s.t)}</div>
   <ul class="sugg">${REASONS.map(r=>`<li><button data-reason="${esc(r)}"><div class="t">${esc(r)}</div></button></li>`).join('')}</ul>`; }
+// ---------- giro ricevuto dalla Centrale (link #g=...)
+let incoming=null;
+function readIncoming(){ const h=location.hash; if(!h.startsWith('#g=')) return null;
+  try{ const b=h.slice(3).replace(/-/g,'+').replace(/_/g,'/'); return JSON.parse(decodeURIComponent(escape(atob(b+'==='.slice((b.length+3)%4))))); }
+  catch(e){ return 'bad'; } }
+function renderImport(){ const g=incoming;
+  $('#body').innerHTML=`<div class="next" style="margin-top:14px"><div class="k">Giro ricevuto</div>
+    <div class="t">${esc(g.n||'Giro')} · ${g.x.length} chiamate</div>
+    <div class="s">Partenza ${esc(g.o||'')} da ${esc(g.st[0])}${g.d?' · '+esc(new Date(g.d).toLocaleDateString('it-IT',{day:'numeric',month:'long'})):''}</div>
+    ${S.stops.length?`<p class="hint">Sostituisce il giro che hai adesso sul telefono (${S.stops.length} fermate).</p>`:''}
+    <button class="btn primary big wide" id="impYes">Apri il giro</button>
+    <button class="btn wide" id="impNo">Non ora</button></div>
+    <ol class="stops" style="padding-top:8px">${g.x.map((x,i)=>`<li class="stop" style="cursor:default"><div class="num">${i+1}</div><div><div class="t">${esc(x[0])}</div><div class="s">${esc([x[1],x[5]].filter(Boolean).join(' · '))}</div></div><div></div></li>`).join('')}</ol>`; }
+async function acceptIncoming(){ const g=incoming;
+  Object.assign(S,{stops:[],order:[],legs:[],geom:null,opt:false,est:false,nextId:1});
+  S.start={t:g.st[0],s:g.st[1],lat:g.st[2],lon:g.st[3]}; if(g.o) S.ora=g.o; if(g.so) S.sosta=g.so; S.ritorno=!!g.r;
+  for(const x of g.x){ const st=addStop({t:x[0],s:x[1],lat:x[2],lon:x[3],approx:!!x[8]}); st.phone=x[4]||''; st.note=x[5]||''; st.tipo=x[6]?'consegna':'ritiro'; st.pezzi=x[7]||1; }
+  S.order=S.stops.map(s=>s.id); S.opt=true; S.giroName=g.n||'';
+  history.replaceState(null,'',location.pathname); incoming=null;
+  view={name:'list'}; sheet(); render(); toast('Giro caricato, ordine della centrale'); await routeGeom(); save(); render(); fit(); }
 function renderSettings(){
   $('#body').innerHTML=`<div class="label"><span>Impostazioni del giro</span></div>
     <div class="setting"><label>Partenza</label><button class="btn wide" id="setStart" style="justify-content:flex-start">${S.start?esc(S.start.t+(S.start.s?', '+S.start.s:'')):'Scegli la partenza'}</button></div>
@@ -486,6 +507,8 @@ document.addEventListener('click',async e=>{
     case 'dOk': saveDetail(); view={name:'list'}; sheet(); render(); fit(); break;
     case 'dDel': removeStop(view.id); view={name:'list'}; sheet(); render(); toast('Fermata eliminata'); break;
     case 'optBtn': optimize(); break;
+    case 'impYes': await acceptIncoming(); break;
+    case 'impNo': history.replaceState(null,'',location.pathname); incoming=null; view={name:'list'}; sheet(); render(); break;
     case 'revBtn': { const c=S.order.filter(id=>closed(byId(id))), o=S.order.filter(id=>!closed(byId(id))).reverse(); S.order=c.concat(o); await routeGeom(); save(); render(); toast('Giro invertito'); break; }
     case 'pasteBtn': view={name:'paste'}; sheet('full'); render(); break;
     case 'newBtn': $('#newConf').hidden=false; break;
@@ -521,8 +544,13 @@ async function pasteAll(){
 }
 
 // ---------- avvio
-initMap(); render(); fit();
-if(!S.start) setTimeout(()=>toast('Per iniziare imposta la partenza: tocca la riga P'),600);
+initMap();
+incoming=readIncoming();
+if(incoming==='bad'){ incoming=null; history.replaceState(null,'',location.pathname); setTimeout(()=>toast('Link del giro non valido o incompleto'),300); }
+if(incoming&&incoming.x&&incoming.x.length){ view={name:'import'}; sheet('full'); }
+render(); fit();
+window.addEventListener('hashchange',()=>{ const g=readIncoming(); if(g&&g!=='bad'){ incoming=g; view={name:'import'}; sheet('full'); render(); } });
+if(!S.start&&!incoming) setTimeout(()=>toast('Per iniziare imposta la partenza: tocca la riga P'),600);
 </script>
 </body>
 </html>
