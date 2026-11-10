@@ -290,7 +290,7 @@ const hhmm=t=>{t=Math.round(t)%1440;return String(Math.floor(t/60)).padStart(2,'
 
 // ---------- aggiunta fermata
 function addStop(p){
-  const s={id:S.nextId++, t:p.t, s:p.s, approx:!!p.approx, lat:p.lat, lon:p.lon, phone:'', note:'', tipo:'ritiro', pezzi:1, pos:'auto', color:0, done:false, failed:false};
+  const s={id:S.nextId++, t:p.t, s:p.s, approx:!!p.approx, lat:p.lat, lon:p.lon, phone:p.phone||'', note:p.note||'', tipo:p.tipo||'ritiro', pezzi:p.pezzi||1, pos:p.pos||'auto', color:p.color||0, done:false, failed:false};
   S.stops.push(s);
   if(S.opt){ // inserimento dove allunga meno, dopo le fermate chiuse
     const from=Math.max(0,S.order.findIndex(id=>!closed(byId(id))));
@@ -347,7 +347,7 @@ function render(){
   h+=`<div class="label"><span>${S.opt?'Giro ordinato':'Fermate'} (${S.stops.length})</span>${S.opt&&S.est?'<b>orari stimati</b>':''}</div><ol class="stops">`;
   h+=`<li class="stop" data-start="1"><div class="num start">P</div><div><div class="t">${S.start?esc(S.start.t):'Imposta la partenza'}</div><div class="s">${S.start?esc(S.start.s||'Partenza'):'Tocca per scegliere casa, deposito o posizione'}</div></div><div class="r">${S.opt&&S.ora?`<b>${S.ora}</b>partenza`:''}</div></li>`;
   list.forEach((s,i)=>{h+=`<li class="stop${closed(s)?' closed':''}${s.failed?' failed':''}" data-open="${s.id}">
-    <div class="num" style="${closed(s)?'':`background:${COLORS[s.color]}`}">${S.opt?i+1:'•'}</div>
+    <div class="num" style="${closed(s)?'':`background:${COLORS[s.color]}`}">${i+1}</div>
     <div><div class="t">${esc(s.t)}${s.pos==='first'?'<span class="chip">PRIMA</span>':s.pos==='last'?'<span class="chip">ULTIMA</span>':''}${s.tipo==='consegna'?'<span class="chip">CONSEGNA</span>':''}</div>
     <div class="s">${esc([s.s,s.pezzi>1?s.pezzi+' pezzi':'',s.note].filter(Boolean).join(' · '))}${s.failed?` · <span style="color:var(--warn)">${esc((s.reason||'non riuscita').toLowerCase())}</span>`:''}</div></div>
     <div class="r">${S.opt&&E[i]!=null?`<b>${hhmm(E[i])}</b>`:''}</div></li>`});
@@ -373,18 +373,30 @@ function renderSearch(){
   if(view.err) h+=`<p class="empty" style="color:var(--warn)">Servizio indirizzi non raggiungibile. Controlla la connessione.</p>`;
   $('#body').innerHTML=h;
 }
+function openDraft(p){ $('#q').blur(); sugg=[]; view={name:'detail',draft:{t:p.t,s:p.s,approx:!!p.approx,lat:p.lat,lon:p.lon,phone:'',note:'',tipo:S.lastTipo||'ritiro',pezzi:1,pos:'auto',color:0}}; sheet('full'); render(); }
+const cur=()=>view.draft||byId(view.id);
 function renderDetail(){
-  const s=byId(view.id); if(!s){view={name:'list'};return render()}
+  const s=cur(); if(!s){view={name:'list'};return render()}
   const seg=(k,opts)=>`<div class="seg">${opts.map(([v,l])=>`<button type="button" data-set="${k}" data-v="${v}" aria-pressed="${s[k]===v}">${l}</button>`).join('')}</div>`;
-  $('#body').innerHTML=`<div class="detail">
-    <div class="label" style="padding-bottom:0"><span>${S.opt?'Fermata '+(S.order.indexOf(s.id)+1):'Nuova fermata'}</span><b>Aggiunta ✓</b></div>
-    <div class="t">${esc(s.t)}</div><div class="s">${esc(s.s)}</div>
-    <div class="colors" style="padding-bottom:12px">${COLORS.map((c,i)=>`<button type="button" data-color="${i}" aria-pressed="${s.color===i}" aria-label="Colore ${i+1}"><i style="background:${c}"></i></button>`).join('')}</div>
+  const D=!!view.draft;
+  const num=D?(S.stops.length+1):(S.opt?S.order.indexOf(s.id)+1:S.stops.indexOf(s)+1);
+  const extra=`
     <div class="field" style="flex-direction:column;align-items:stretch"><textarea id="dNote" placeholder="Aggiungi note: cosa ritirare, piano, citofono…">${esc(s.note)}</textarea></div>
     <div class="field" style="flex-direction:column;align-items:stretch"><input type="tel" id="dTel" placeholder="Telefono del cliente" value="${esc(s.phone)}"></div>
     <div class="field"><span>Pezzi</span><div class="stepper"><button type="button" data-step="-1" aria-label="Meno">−</button><output id="dPz">${s.pezzi}</output><button type="button" data-step="1" aria-label="Più">+</button></div></div>
     <div class="field"><span>Ordine</span>${seg('pos',[['first','Prima'],['auto','Automatico'],['last','Ultima']])}</div>
-    <div class="field"><span>Tipo</span>${seg('tipo',[['ritiro','Ritiro'],['consegna','Consegna']])}</div>
+    <div class="field"><span>Colore</span><div class="colors">${COLORS.map((c,i)=>`<button type="button" data-color="${i}" aria-pressed="${s.color===i}" aria-label="Colore ${i+1}"><i style="background:${c}"></i></button>`).join('')}</div></div>`;
+  $('#body').innerHTML=D?`<div class="detail">
+    <div class="label" style="padding-bottom:0"><span>Fermata ${num}</span>${s.approx?'<b>civico sulla via</b>':''}</div>
+    <div class="t">${esc(s.t)}</div><div class="s">${esc(s.s)}</div>
+    <div class="field"><span>Tipo</span>${seg('tipo',[['consegna','Consegna'],['ritiro','Ritiro']])}</div>
+    <button class="btn primary big wide" id="dAdd">Aggiungi fermata ${num}</button>
+    ${extra}
+  </div>`:`<div class="detail">
+    <div class="label" style="padding-bottom:0"><span>Fermata ${num}</span><b>Aggiunta ✓</b></div>
+    <div class="t">${esc(s.t)}</div><div class="s">${esc(s.s)}</div>
+    <div class="field"><span>Tipo</span>${seg('tipo',[['consegna','Consegna'],['ritiro','Ritiro']])}</div>
+    ${extra}
     <div class="field"><a class="btn grow" href="${navUrl(s)}" target="_blank" rel="noopener">Naviga</a>
       ${closed(s)?`<button class="btn grow" data-undo="${s.id}">Riapri</button>`:`<button class="btn grow" data-done="${s.id}">✓ Fatta</button><button class="btn grow" data-fail="${s.id}">Non riuscita</button>`}</div>
     ${S.opt?`<div class="field"><span>Posizione nel giro</span><div class="row"><button class="btn" data-move="-1">↑ Prima</button><button class="btn" data-move="1">↓ Dopo</button></div></div>`:''}
@@ -454,9 +466,10 @@ function drawMap(focus){ if(!map) return; layer.clearLayers();
   if(S.start) L.marker([S.start.lat,S.start.lon],{icon:pin('#222','P')}).addTo(layer);
   const list=S.opt?S.order.map(byId):S.stops;
   list.forEach((s,i)=>{const bg=s.failed?css.getPropertyValue('--warn'):s.done?css.getPropertyValue('--done'):COLORS[s.color];
-    L.marker([s.lat,s.lon],{icon:pin(bg,S.opt?i+1:'•')}).on('click',()=>{view={name:'detail',id:s.id};sheet();render()}).addTo(layer)});
+    L.marker([s.lat,s.lon],{icon:pin(bg,i+1)}).on('click',()=>{view={name:'detail',id:s.id};sheet();render()}).addTo(layer)});
   if(S.opt&&S.start){const line=S.geom||[[S.start.lat,S.start.lon],...list.map(s=>[s.lat,s.lon]),...(S.ritorno?[[S.start.lat,S.start.lon]]:[])];
     L.polyline(line,{color:css.getPropertyValue('--accent').trim(),weight:5,opacity:.85,dashArray:S.geom?null:'6 8'}).addTo(layer);}
+  if(view.draft) L.marker([view.draft.lat,view.draft.lon],{icon:pin(css.getPropertyValue('--accent'),'+')}).addTo(layer);
   if(focus) map.setView([focus.lat,focus.lon],16);
 }
 function fit(){ if(!map) return; const pts=[...(S.start?[[S.start.lat,S.start.lon]]:[]),...S.stops.map(s=>[s.lat,s.lon])];
@@ -470,22 +483,22 @@ $('#q').addEventListener('input',()=>{ $('#qClear').hidden=!$('#q').value; clear
   tmr=setTimeout(async()=>{ try{ sugg=await suggest(q); view.err=false }catch(e){ if(e.name==='AbortError')return; sugg=[]; view.err=true }
     view.loading=false; render(); },350); });
 $('#qClear').onclick=()=>{ $('#q').value=''; sugg=[]; $('#q').focus(); render(); };
-$('#back').onclick=()=>{ if(view.name==='detail') saveDetail(); $('#q').value=''; $('#q').blur(); view={name:'list'}; sugg=[]; sheet(); render(); fit(); };
+$('#back').onclick=()=>{ if(view.name==='detail'&&!view.draft) saveDetail(); $('#q').value=''; $('#q').blur(); view={name:'list'}; sugg=[]; sheet(); render(); fit(); };
 $('#handle').onclick=()=>{ const el=$('#sheet'); sheet(el.classList.contains('min')?null:el.classList.contains('full')?'min':'full'); };
 $('#fabFit').onclick=fit;
 $('#fabSet').onclick=()=>openSettings();
 function openSettings(){ view={name:'settings'}; sheet('full'); render(); }
 
-function saveDetail(){ const s=byId(view.id); if(!s) return;
+function saveDetail(){ const s=cur(); if(!s) return;
   const n=$('#dNote'),t=$('#dTel'); if(n) s.note=n.value.trim(); if(t) s.phone=t.value.replace(/[^\d+]/g,''); save(); }
 
 document.addEventListener('click',async e=>{
   const el=e.target.closest('[data-typed],[data-sugg],[data-gps],[data-open],[data-start],[data-done],[data-fail],[data-undo],[data-set],[data-step],[data-color],[data-nav],button');
   if(!el) return; const d=el.dataset;
-  if(d.typed){ const p=typedOption($('#q').value); if(!p) return; const s=addStop(p); $('#q').value=''; $('#q').blur(); sugg=[]; view={name:'detail',id:s.id}; sheet('full'); render(); return; }
+  if(d.typed){ const p=typedOption($('#q').value); if(!p) return; openDraft(p); return; }
   if(d.sugg!=null){ const p=sugg[+d.sugg];
     if(view.mode==='start'){ S.start={t:p.t,s:p.s,lat:p.lat,lon:p.lon}; if(S.opt) await routeGeom(); save(); $('#q').value=''; $('#q').blur(); view={name:'settings'}; render(); toast('Partenza impostata'); return; }
-    const s=addStop(p); $('#q').value=''; $('#q').blur(); sugg=[]; view={name:'detail',id:s.id}; sheet('full'); render(); return; }
+    openDraft(p); return; }
   if(d.gps){ if(!navigator.geolocation){toast('Posizione non disponibile su questo telefono');return}
     toast('Cerco la tua posizione…');
     navigator.geolocation.getCurrentPosition(p=>{S.start={t:'Posizione attuale',s:'',lat:p.coords.latitude,lon:p.coords.longitude};save();$('#q').value='';$('#q').blur();view={name:'settings'};render();toast('Partenza impostata')},
@@ -499,11 +512,13 @@ document.addEventListener('click',async e=>{
   if(d.done||d.fail||d.undo){ const id=+(d.done||d.fail||d.undo), s=byId(id); if(view.name==='detail') saveDetail();
     s.done=!!d.done; s.failed=false; if(d.undo) s.reason=''; save(); if(view.name==='detail'){view={name:'list'};sheet()} render(); $('#body').scrollTop=0;
     if(d.done) toast('Fatta ✓'); return; }
-  if(d.set){ const s=byId(view.id); s[d.set]=d.v; save(); renderDetail(); return; }
-  if(d.step){ const s=byId(view.id); s.pezzi=Math.max(1,s.pezzi+ +d.step); $('#dPz').textContent=s.pezzi; save(); return; }
-  if(d.color!=null){ const s=byId(view.id); saveDetail(); s.color=+d.color; save(); renderDetail(); return; }
+  if(d.set){ saveDetail(); const s=cur(); s[d.set]=d.v; if(d.set==='tipo') S.lastTipo=d.v; save(); renderDetail(); return; }
+  if(d.step){ const s=cur(); s.pezzi=Math.max(1,s.pezzi+ +d.step); $('#dPz').textContent=s.pezzi; save(); return; }
+  if(d.color!=null){ const s=cur(); saveDetail(); s.color=+d.color; save(); renderDetail(); return; }
   if(d.nav){ S.nav=d.nav; save(); document.querySelectorAll('[data-nav]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.nav===S.nav)); return; }
   switch(el.id){
+    case 'dAdd': { saveDetail(); const st=addStop(view.draft); const n=S.opt?S.order.indexOf(st.id)+1:S.stops.length;
+      $('#q').value=''; view={name:'list'}; sheet(); render(); fit(); toast(`Fermata ${n} aggiunta`); break; }
     case 'dOk': saveDetail(); view={name:'list'}; sheet(); render(); fit(); break;
     case 'dDel': removeStop(view.id); view={name:'list'}; sheet(); render(); toast('Fermata eliminata'); break;
     case 'optBtn': optimize(); break;
