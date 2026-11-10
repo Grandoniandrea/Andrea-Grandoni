@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Giro">
+<meta name="theme-color" content="#14181d">
+<title>Giro Chiamate</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+/* Layout: mappa a tutto schermo, foglio dal basso con ricerca in cima (come un navigatore da giri) */
+:root{
+  --bg:#f4f6f8; --sheet:#ffffff; --raised:#eef1f4; --fg:#151a20; --muted:#647080; --line:#dde2e8;
+  --accent:#1c8f63; --accent-fg:#ffffff; --accent-soft:#dff3ea; --warn:#c2620f; --done:#98a2ad; --danger:#c33b3b;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0e1115; --sheet:#1a1e24; --raised:#252a31; --fg:#eef1f4; --muted:#949eaa; --line:#2f353d;
+  --accent:#3cc48d; --accent-fg:#06150e; --accent-soft:#183528; --warn:#f0a050; --done:#5d6672; --danger:#ef6b6b; color-scheme:dark}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--fg);font:16px/1.35 var(--font)}
+#map{position:fixed;inset:0;z-index:0;background:var(--bg)}
+.leaflet-control-attribution{font-size:9px}
+
+/* pulsanti flottanti sulla mappa */
+.fab{position:fixed;z-index:5;right:max(12px,env(safe-area-inset-right,0px));width:44px;height:44px;border-radius:50%;
+  background:var(--sheet);color:var(--fg);border:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.25);font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+#fabSet{top:calc(12px + env(safe-area-inset-top,0px))}
+#fabFit{top:calc(64px + env(safe-area-inset-top,0px))}
+
+/* foglio */
+#sheet{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--sheet);border-radius:20px 20px 0 0;
+  box-shadow:0 -4px 24px rgba(0,0,0,.28);display:flex;flex-direction:column;height:46%;transition:height .25s ease;
+  padding-bottom:env(safe-area-inset-bottom,0px)}
+#sheet.min{height:150px} #sheet.full{height:calc(100% - 40px - env(safe-area-inset-top,0px))}
+.handle{padding:8px 0 4px;display:flex;justify-content:center;cursor:pointer;flex:none}
+.handle i{width:40px;height:5px;border-radius:3px;background:var(--line)}
+.top{padding:4px max(14px,env(safe-area-inset-right,0px)) 10px max(14px,env(safe-area-inset-left,0px));flex:none;display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--line)}
+.search{flex:1;display:flex;align-items:center;gap:8px;background:var(--raised);border:1.5px solid transparent;border-radius:12px;padding:0 10px;min-height:48px}
+.search:focus-within{border-color:var(--accent)}
+.search input{flex:1;min-width:0;border:0;background:transparent;color:var(--fg);font:inherit;font-size:17px;padding:12px 0;outline:none}
+.search svg{flex:none;color:var(--muted)}
+.iconbtn{background:none;border:0;color:var(--muted);font-size:22px;padding:6px;cursor:pointer;line-height:1;min-width:36px;min-height:36px}
+.close{color:var(--fg)}
+.body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 max(14px,env(safe-area-inset-right,0px)) 20px max(14px,env(safe-area-inset-left,0px))}
+.label{font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding:14px 0 6px;display:flex;justify-content:space-between;gap:8px}
+.label b{font-weight:600;color:var(--muted)}
+
+/* suggerimenti */
+.sugg{list-style:none;margin:0 calc(-1 * max(14px,env(safe-area-inset-left,0px)));padding:0}
+.sugg .sec{background:var(--raised);color:var(--muted);font-size:.9rem;padding:10px max(14px,env(safe-area-inset-left,0px))}
+.sugg button{width:100%;display:flex;gap:14px;align-items:center;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);color:var(--fg);font:inherit;padding:12px max(14px,env(safe-area-inset-left,0px));cursor:pointer}
+.sugg .t{font-weight:600;font-size:1.05rem}
+.sugg .s{color:var(--muted);font-size:.92rem}
+.sugg .ico{flex:none;width:30px;height:30px;color:var(--muted)}
+.empty{color:var(--muted);padding:16px 0;font-size:.95rem}
+
+/* lista fermate */
+ol.stops{list-style:none;margin:0;padding:0}
+.stop{display:grid;grid-template-columns:34px 1fr auto;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.num{width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--accent-fg);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;font-variant-numeric:tabular-nums}
+.num.start{background:var(--fg);color:var(--sheet)}
+.stop .t{font-weight:600;overflow-wrap:anywhere}
+.stop .s{color:var(--muted);font-size:.88rem;overflow-wrap:anywhere}
+.stop .r{text-align:right;font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.stop .r b{display:block;color:var(--fg);font-size:.95rem}
+.stop.closed{opacity:.5} .stop.closed .t{text-decoration:line-through}
+.stop.failed .num{background:var(--warn)} .stop.failed .t{text-decoration:none}
+.chip{display:inline-block;font-size:.72rem;font-weight:700;padding:1px 7px;border-radius:9px;background:var(--raised);color:var(--muted);margin-left:4px;vertical-align:1px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:1px}
+
+/* bottoni */
+.btn{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--raised);color:var(--fg);border-radius:12px;padding:10px 14px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:46px}
+.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.danger{color:var(--danger)}
+.wide{width:100%}
+.big{min-height:54px;font-size:1.08rem}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row>*{min-width:0}
+.grow{flex:1 1 140px}
+.btn:disabled{opacity:.5}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* prossima fermata */
+.next{background:var(--accent-soft);border-radius:16px;padding:14px;margin-top:12px;display:flex;flex-direction:column;gap:10px}
+.next .k{font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.next .t{font-size:1.25rem;font-weight:700}
+.next .s{color:var(--muted)}
+.stats{display:flex;gap:16px;flex-wrap:wrap;font-variant-numeric:tabular-nums;padding:12px 0 0}
+.stats b{font-size:1.15rem;display:block}
+.stats span{font-size:.75rem;color:var(--muted)}
+
+/* scheda fermata */
+.detail .t{font-size:1.6rem;font-weight:700;line-height:1.15;padding-top:14px}
+.detail .s{color:var(--muted);font-size:1.05rem;padding:4px 0 12px}
+.field{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.field>span{font-size:1.05rem;display:flex;align-items:center;gap:10px}
+.field input[type=text],.field input[type=tel],.field textarea,.setting input{font:inherit;color:var(--fg);background:var(--raised);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+.field textarea{min-height:64px;resize:vertical}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;padding:3px;gap:2px;background:var(--sheet)}
+.seg button{border:0;background:none;color:var(--muted);font:inherit;font-weight:600;padding:8px 14px;border-radius:9px;cursor:pointer;min-height:38px}
+.seg button[aria-pressed=true]{background:var(--accent-soft);color:var(--accent)}
+.stepper{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.stepper button{border:0;background:none;color:var(--fg);font-size:1.3rem;width:48px;min-height:42px;cursor:pointer}
+.stepper output{min-width:48px;display:flex;align-items:center;justify-content:center;border-left:1px solid var(--line);border-right:1px solid var(--line);font-variant-numeric:tabular-nums}
+.colors{display:flex;gap:8px;flex-wrap:wrap}
+.colors button{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);cursor:pointer;display:flex;align-items:center;justify-content:center;background:var(--sheet)}
+.colors button i{width:14px;height:14px;border-radius:50%}
+.colors button[aria-pressed=true]{border-color:var(--fg)}
+.setting{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-top:1px solid var(--line)}
+.setting label{font-size:.9rem;color:var(--muted)}
+.check{display:flex;align-items:center;gap:10px;font-size:1rem;padding:12px 0;border-top:1px solid var(--line)}
+.check input{width:22px;height:22px}
+.hint{color:var(--muted);font-size:.86rem;margin:6px 0}
+.toast{position:fixed;left:50%;transform:translateX(-50%);top:calc(14px + env(safe-area-inset-top,0px));z-index:20;background:var(--fg);color:var(--sheet);padding:10px 16px;border-radius:12px;font-size:.95rem;max-width:calc(100% - 32px);box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.pin{width:28px;height:28px;border-radius:50%;border:2px solid #fff;color:#fff;display:flex;align-items:center;justify-content:center;font:700 12px var(--font);box-shadow:0 1px 4px rgba(0,0,0,.45)}
+.bar{height:5px;background:var(--line);border-radius:3px;overflow:hidden;margin:8px 0}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<button class="fab" id="fabSet" type="button" aria-label="Impostazioni">⚙︎</button>
+<button class="fab" id="fabFit" type="button" aria-label="Mostra tutto il giro">⤢</button>
+
+<section id="sheet">
+  <div class="handle" id="handle" role="button" tabindex="0" aria-label="Allarga o riduci"><i></i></div>
+  <div class="top">
+    <div class="search">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Digita una fermata" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
+      <button class="iconbtn" id="qClear" type="button" aria-label="Cancella" hidden>✕</button>
+    </div>
+    <button class="iconbtn close" id="back" type="button" aria-label="Chiudi" hidden>✕</button>
+  </div>
+  <div class="body" id="body"></div>
+</section>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const KEY='giro-chiamate-v2', GEO='giro-geocache-v1';
+const COLORS=['#1c8f63','#3a7bd5','#8a5cd6','#d4507a','#e08a1e','#2aa6b3'];
+const DEF={start:null, stops:[], order:[], legs:[], geom:null, km:0, min:0, est:false, opt:false,
+  ora:'', sosta:5, ritorno:false, nav:'apple', comune:'', nextId:1};
+let S = Object.assign({}, DEF, load()||{});
+let cache={}; try{cache=JSON.parse(localStorage.getItem(GEO)||'{}')}catch(e){}
+let view={name:'list', id:null, mode:'stop'}; // list | search | detail | settings
+let map, layer, sugg=[], ctrl=null, tmr=null;
+
+function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));localStorage.setItem(GEO,JSON.stringify(cache))}catch(e){}}
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const byId=id=>S.stops.find(s=>s.id===id);
+const closed=s=>s.done||s.failed;
+function toast(t){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(e._t);e._t=setTimeout(()=>e.hidden=true,2600)}
+function sheet(h){const el=$('#sheet');el.classList.remove('min','full');if(h)el.classList.add(h);setTimeout(()=>map&&map.invalidateSize(),260)}
+
+// ---------- ricerca indirizzi (Photon per i suggerimenti, Nominatim di riserva)
+function center(){const pts=S.stops.length?S.stops:(S.start?[S.start]:[]);
+  if(!pts.length) return map?map.getCenter():{lat:43.66,lng:10.63};
+  return {lat:pts.reduce((a,p)=>a+p.lat,0)/pts.length,lng:pts.reduce((a,p)=>a+p.lon,0)/pts.length}}
+function fmt(p){ // proprietà Photon -> titolo e sottotitolo
+  const street=p.street||(p.osm_key==='highway'?p.name:'');
+  const t = street ? street+(p.housenumber?', '+p.housenumber:'') : (p.name||'');
+  const s = [p.postcode, p.city||p.town||p.village||p.district, p.county].filter(Boolean)
+    .filter((x,i,a)=>a.indexOf(x)===i).join(', ');
+  return {t, s};
+}
+async function suggest(q){
+  if(ctrl) ctrl.abort(); ctrl=new AbortController();
+  const c=center();
+  let q2=q; if(S.comune && !q.toLowerCase().includes(S.comune.toLowerCase()) && !/,/.test(q)) q2=q; // il comune serve solo come preferenza di zona
+  const url=`https://photon.komoot.io/api/?limit=8&lat=${c.lat}&lon=${c.lng}&location_bias_scale=0.4&q=${encodeURIComponent(q2)}`;
+  const r=await fetch(url,{signal:ctrl.signal}); const j=await r.json();
+  const seen=new Set();
+  return j.features.filter(f=>(f.properties.countrycode||'').toUpperCase()==='IT').map(f=>{
+    const {t,s}=fmt(f.properties); return {t,s,lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0]};
+  }).filter(x=>{const k=x.t+'|'+x.s; if(!x.t||seen.has(k))return false; seen.add(k); return true}).slice(0,6);
+}
+let lastN=0;
+async function geocode(q){ // per incolla lista: Nominatim, 1 al secondo
+  const k=q.toLowerCase(); if(cache[k]) return cache[k];
+  const w=1100-(Date.now()-lastN); if(w>0) await sleep(w); lastN=Date.now();
+  const r=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&addressdetails=1&countrycodes=it&accept-language=it&q='+encodeURIComponent(q));
+  const j=await r.json(); if(!j[0]) return null;
+  const a=j[0].address||{};
+  const res={lat:+j[0].lat,lon:+j[0].lon,t:(a.road?a.road+(a.house_number?', '+a.house_number:''):j[0].name)||q,
+    s:[a.postcode,a.city||a.town||a.village,a.county].filter(Boolean).join(', ')};
+  cache[k]=res; return res;
+}
+
+// ---------- matrice tempi e ottimizzazione con vincoli Prima / Automatico / Ultima
+const hav=(a,b)=>{const R=6371,d=Math.PI/180,x=(b.lat-a.lat)*d,y=(b.lon-a.lon)*d;
+  const h=Math.sin(x/2)**2+Math.cos(a.lat*d)*Math.cos(b.lat*d)*Math.sin(y/2)**2;return 2*R*Math.asin(Math.sqrt(h))};
+const coordStr=pts=>pts.map(p=>p.lon.toFixed(6)+','+p.lat.toFixed(6)).join(';');
+async function matrix(pts){
+  try{ const r=await fetch(`https://router.project-osrm.org/table/v1/driving/${coordStr(pts)}?annotations=duration`);
+    const j=await r.json(); if(j.code==='Ok') return {M:j.durations.map(r=>r.map(x=>x==null?1e6:x/60)),real:true}; }catch(e){}
+  return {M:pts.map(a=>pts.map(b=>hav(a,b)*1.3/35*60)),real:false};
+}
+function orderGroup(M,from,nodes,closeTo){ // vicino più vicino + 2-opt, percorso aperto da 'from'
+  let route=[],left=new Set(nodes),cur=from;
+  while(left.size){let b,bd=Infinity;for(const i of left){if(M[cur][i]<bd){bd=M[cur][i];b=i}}route.push(b);left.delete(b);cur=b}
+  const cost=r=>{let s=0,p=from;for(const i of r){s+=M[p][i];p=i}if(closeTo!=null&&r.length)s+=M[p][closeTo];return s};
+  let imp=true,guard=0;
+  while(imp&&guard++<200){imp=false;
+    for(let i=0;i<route.length-1;i++)for(let k=i+1;k<route.length;k++){
+      const nr=route.slice(0,i).concat(route.slice(i,k+1).reverse(),route.slice(k+1));
+      if(cost(nr)<cost(route)-1e-9){route=nr;imp=true}}}
+  return route;
+}
+async function optimize(){
+  const open=S.stops.filter(s=>!closed(s));
+  const keep=S.opt?S.order.filter(id=>closed(byId(id))):S.stops.filter(closed).map(s=>s.id);
+  if(!S.start){ toast('Imposta prima la partenza dalle impostazioni ⚙︎'); openSettings(); return; }
+  if(!open.length){ toast('Aggiungi almeno una fermata.'); return; }
+  busy('Calcolo l\'ordine migliore…');
+  const origin = keep.length ? byId(keep.at(-1)) : S.start;
+  const pts=[origin,...open, S.start]; const n=open.length;
+  const {M}=await matrix(pts);
+  const idx=s=>open.indexOf(s)+1;
+  const gF=open.filter(s=>s.pos==='first').map(idx), gA=open.filter(s=>s.pos!=='first'&&s.pos!=='last').map(idx), gL=open.filter(s=>s.pos==='last').map(idx);
+  let route=[],cur=0; const back=S.ritorno?n+1:null;
+  for(const [g,isLast] of [[gF,false],[gA,!gL.length],[gL,true]]){ if(!g.length) continue;
+    const r=orderGroup(M,cur,g,isLast?back:null); route=route.concat(r); cur=r.at(-1); }
+  S.order=keep.concat(route.map(i=>open[i-1].id)); S.opt=true;
+  await routeGeom(); busy(null); save(); render(); fit();
+  toast(S.est?'Giro ordinato (tempi stimati, servizio percorsi non raggiungibile)':'Giro ordinato');
+}
+async function routeGeom(){ // percorso stradale per mappa, km e orari
+  const seq=[S.start,...S.order.map(byId)]; if(S.ritorno) seq.push(S.start);
+  try{ if(seq.length>100) throw 0;
+    const r=await fetch(`https://router.project-osrm.org/route/v1/driving/${coordStr(seq)}?overview=full&geometries=geojson`);
+    const j=await r.json(); if(j.code!=='Ok') throw 0;
+    S.geom=j.routes[0].geometry.coordinates.map(c=>[c[1],c[0]]); S.legs=j.routes[0].legs.map(l=>l.duration/60);
+    S.km=j.routes[0].distance/1000; S.est=false;
+  }catch(e){ estimate(); }
+  S.min=S.legs.reduce((a,b)=>a+b,0);
+}
+function estimate(){ const seq=[S.start,...S.order.map(byId)]; if(S.ritorno) seq.push(S.start);
+  S.legs=[]; let km=0; for(let i=1;i<seq.length;i++){const d=hav(seq[i-1],seq[i])*1.3; km+=d; S.legs.push(d/35*60)}
+  S.km=km; S.geom=null; S.est=true; S.min=S.legs.reduce((a,b)=>a+b,0); }
+function etas(){ const [h,m]=(S.ora||'').split(':').map(Number); const d=new Date();
+  let t=isNaN(h)?d.getHours()*60+d.getMinutes():h*60+m; const out=[];
+  S.order.forEach((id,i)=>{t+=(S.legs[i]||0);out.push(t);t+=(+S.sosta||5)}); return out; }
+const hhmm=t=>{t=Math.round(t)%1440;return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0')};
+
+// ---------- aggiunta fermata
+function addStop(p){
+  const s={id:S.nextId++, t:p.t, s:p.s, lat:p.lat, lon:p.lon, phone:'', note:'', tipo:'ritiro', pezzi:1, pos:'auto', color:0, done:false, failed:false};
+  S.stops.push(s);
+  if(S.opt){ // inserimento dove allunga meno, dopo le fermate chiuse
+    const from=Math.max(0,S.order.findIndex(id=>!closed(byId(id))));
+    const P=i=>i<0?S.start:(i>=S.order.length?(S.ritorno?S.start:null):byId(S.order[i]));
+    let best=S.order.length,bc=Infinity;
+    for(let k=(from<0?S.order.length:from);k<=S.order.length;k++){const a=P(k-1),b=P(k);
+      const c=b?hav(a,s)+hav(s,b)-hav(a,b):hav(a,s); if(c<bc){bc=c;best=k}}
+    S.order.splice(best,0,s.id); estimate();
+  }
+  save(); return s;
+}
+function removeStop(id){ S.stops=S.stops.filter(s=>s.id!==id); S.order=S.order.filter(x=>x!==id);
+  if(S.opt){ if(S.order.length) estimate(); else S.opt=false; } save(); }
+
+// ---------- navigatore
+function navUrl(p){const ll=p.lat+','+p.lon;
+  if(S.nav==='google')return'https://www.google.com/maps/dir/?api=1&travelmode=driving&destination='+ll;
+  if(S.nav==='waze')return'https://waze.com/ul?navigate=yes&ll='+ll;
+  return'https://maps.apple.com/?dirflg=d&daddr='+ll;}
+
+// ---------- viste
+function render(){
+  const b=$('#body'); $('#back').hidden=view.name==='list'; $('#qClear').hidden=!$('#q').value;
+  if(view.name==='search') return renderSearch();
+  if(view.name==='detail') return renderDetail();
+  if(view.name==='settings') return renderSettings();
+  if(view.name==='paste') return renderPaste();
+  if(view.name==='fail') return renderFail();
+  // elenco
+  const list=S.opt?S.order.map(byId):S.stops;
+  const E=S.opt?etas():[];
+  const done=S.stops.filter(s=>s.done).length, fail=S.stops.filter(s=>s.failed).length;
+  const nextId=S.opt?S.order.find(id=>!closed(byId(id))):undefined;
+  let h='';
+  if(S.opt&&nextId!==undefined){const s=byId(nextId),i=S.order.indexOf(nextId);
+    h+=`<div class="next"><div class="k">Prossima · ${i+1} di ${S.order.length} · arrivo circa ${hhmm(E[i])}</div>
+      <div><div class="t">${esc(s.t)}</div><div class="s">${esc([s.s,s.note].filter(Boolean).join(' · '))}</div></div>
+      <a class="btn primary big wide" href="${navUrl(s)}" target="_blank" rel="noopener">Naviga</a>
+      <div class="row">${s.phone?`<a class="btn grow" href="tel:${esc(s.phone)}">📞 Chiama</a>`:''}
+      <button class="btn grow" data-done="${s.id}">✓ Fatta</button><button class="btn grow" data-fail="${s.id}">Non riuscita</button></div></div>`;}
+  else if(S.opt&&S.order.length){h+=`<div class="next"><div class="k">Giro finito</div><div class="t">${done} fatte${fail?`, ${fail} non presenti`:''}</div>
+    ${S.ritorno?`<a class="btn primary big wide" href="${navUrl(S.start)}" target="_blank" rel="noopener">Torna alla partenza</a>`:''}</div>`;}
+  if(S.opt){const tot=S.min+(+S.sosta||5)*S.order.length;
+    h+=`<div class="stats"><div><b>${S.order.length}</b><span>fermate</span></div><div><b>${done}/${S.order.length}</b><span>fatte</span></div>
+    <div><b>${S.km.toFixed(1)} km</b><span>${S.est?'stima':'su strada'}</span></div>
+    <div><b>${Math.floor(tot/60)?Math.floor(tot/60)+' h ':''}${Math.round(tot%60)} min</b><span>con le soste</span></div>
+    ${E.length?`<div><b>${hhmm(E.at(-1)+(+S.sosta||5)+(S.ritorno?S.legs.at(-1)||0:0))}</b><span>fine prevista</span></div>`:''}</div>`;}
+  h+=`<div class="label"><span>${S.opt?'Giro ordinato':'Fermate'} (${S.stops.length})</span>${S.opt&&S.est?'<b>orari stimati</b>':''}</div><ol class="stops">`;
+  h+=`<li class="stop" data-start="1"><div class="num start">P</div><div><div class="t">${S.start?esc(S.start.t):'Imposta la partenza'}</div><div class="s">${S.start?esc(S.start.s||'Partenza'):'Tocca per scegliere casa, deposito o posizione'}</div></div><div class="r">${S.opt&&S.ora?`<b>${S.ora}</b>partenza`:''}</div></li>`;
+  list.forEach((s,i)=>{h+=`<li class="stop${closed(s)?' closed':''}${s.failed?' failed':''}" data-open="${s.id}">
+    <div class="num" style="${closed(s)?'':`background:${COLORS[s.color]}`}">${S.opt?i+1:'•'}</div>
+    <div><div class="t">${esc(s.t)}${s.pos==='first'?'<span class="chip">PRIMA</span>':s.pos==='last'?'<span class="chip">ULTIMA</span>':''}${s.tipo==='consegna'?'<span class="chip">CONSEGNA</span>':''}</div>
+    <div class="s">${esc([s.s,s.pezzi>1?s.pezzi+' pezzi':'',s.note].filter(Boolean).join(' · '))}${s.failed?` · <span style="color:var(--warn)">${esc((s.reason||'non riuscita').toLowerCase())}</span>`:''}</div></div>
+    <div class="r">${S.opt&&E[i]!=null?`<b>${hhmm(E[i])}</b>`:''}</div></li>`});
+  h+=`</ol>`;
+  if(!S.stops.length) h+=`<p class="empty">Scrivi un indirizzo nella barra in alto e tocca il suggerimento giusto per aggiungere la prima chiamata.</p>`;
+  if(S.stops.length) h+=`<div class="row" style="padding-top:14px"><button class="btn primary big grow" id="optBtn">${S.opt?'Riottimizza il giro':'Ottimizza il giro'}</button>${S.opt?'<button class="btn big" id="revBtn">Inverti</button>':''}</div>`;
+  h+=`<div class="row" style="padding-top:8px"><button class="btn grow" id="pasteBtn">Incolla una lista</button>${S.stops.length?'<button class="btn grow danger" id="newBtn">Nuovo giro</button>':''}</div>
+    <div class="row" id="newConf" hidden style="padding-top:8px"><span class="grow">Cancello tutte le fermate?</span><button class="btn primary" id="newYes">Sì</button><button class="btn" id="newNo">No</button></div>
+    <div id="busy" hidden><div class="bar"><i id="busybar" style="width:60%"></i></div><p class="hint" id="busytxt"></p></div>`;
+  b.innerHTML=h; drawMap();
+}
+function renderSearch(){
+  const q=$('#q').value.trim(); let h='';
+  h+=`<ul class="sugg"><li class="sec">${view.mode==='start'?'Scegli la partenza':'Aggiungi una nuova fermata'}</li>`;
+  if(view.mode==='start') h+=`<li><button data-gps="1"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7"/></svg><div><div class="t">Posizione attuale</div><div class="s">Usa il GPS del telefono</div></div></button></li>`;
+  sugg.forEach((x,i)=>{h+=`<li><button data-sugg="${i}"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-4l-3 3-3-3H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M12 7.5v6M9 10.5h6"/></svg><div><div class="t">${esc(x.t)}</div><div class="s">${esc(x.s)}</div></div></button></li>`});
+  h+=`</ul>`;
+  if(q.length>=3&&!sugg.length&&!view.loading) h+=`<p class="empty">Nessun indirizzo trovato. Prova ad aggiungere il comune, per esempio "${esc(q)}, Bientina".</p>`;
+  if(view.loading) h+=`<p class="empty">Cerco…</p>`;
+  if(view.err) h+=`<p class="empty" style="color:var(--warn)">Servizio indirizzi non raggiungibile. Controlla la connessione.</p>`;
+  $('#body').innerHTML=h;
+}
+function renderDetail(){
+  const s=byId(view.id); if(!s){view={name:'list'};return render()}
+  const seg=(k,opts)=>`<div class="seg">${opts.map(([v,l])=>`<button type="button" data-set="${k}" data-v="${v}" aria-pressed="${s[k]===v}">${l}</button>`).join('')}</div>`;
+  $('#body').innerHTML=`<div class="detail">
+    <div class="label" style="padding-bottom:0"><span>${S.opt?'Fermata '+(S.order.indexOf(s.id)+1):'Nuova fermata'}</span><b>Aggiunta ✓</b></div>
+    <div class="t">${esc(s.t)}</div><div class="s">${esc(s.s)}</div>
+    <div class="colors" style="padding-bottom:12px">${COLORS.map((c,i)=>`<button type="button" data-color="${i}" aria-pressed="${s.color===i}" aria-label="Colore ${i+1}"><i style="background:${c}"></i></button>`).join('')}</div>
+    <div class="field" style="flex-direction:column;align-items:stretch"><textarea id="dNote" placeholder="Aggiungi note: cosa ritirare, piano, citofono…">${esc(s.note)}</textarea></div>
+    <div class="field" style="flex-direction:column;align-items:stretch"><input type="tel" id="dTel" placeholder="Telefono del cliente" value="${esc(s.phone)}"></div>
+    <div class="field"><span>Pezzi</span><div class="stepper"><button type="button" data-step="-1" aria-label="Meno">−</button><output id="dPz">${s.pezzi}</output><button type="button" data-step="1" aria-label="Più">+</button></div></div>
+    <div class="field"><span>Ordine</span>${seg('pos',[['first','Prima'],['auto','Automatico'],['last','Ultima']])}</div>
+    <div class="field"><span>Tipo</span>${seg('tipo',[['ritiro','Ritiro'],['consegna','Consegna']])}</div>
+    <div class="field"><a class="btn grow" href="${navUrl(s)}" target="_blank" rel="noopener">Naviga</a>
+      ${closed(s)?`<button class="btn grow" data-undo="${s.id}">Riapri</button>`:`<button class="btn grow" data-done="${s.id}">✓ Fatta</button><button class="btn grow" data-fail="${s.id}">Non riuscita</button>`}</div>
+    ${S.opt?`<div class="field"><span>Posizione nel giro</span><div class="row"><button class="btn" data-move="-1">↑ Prima</button><button class="btn" data-move="1">↓ Dopo</button></div></div>`:''}
+    ${s.failed?`<div class="field"><span>Motivo</span><span style="color:var(--warn)">${esc(s.reason||'Non presente')}</span></div>`:''}
+    <div class="field"><button class="btn primary big grow" id="dOk">Fatto</button><button class="btn danger" id="dDel">Elimina</button></div>
+  </div>`;
+  drawMap(s);
+}
+const REASONS=['Non presente','Non risponde al telefono','Indirizzo sbagliato','Materiale non conforme','Rimandata dal cliente','Accesso impossibile'];
+function renderFail(){ const s=byId(view.id);
+  $('#body').innerHTML=`<div class="label"><span>Perché non è riuscita?</span></div><div class="t" style="font-weight:700;font-size:1.15rem;padding-bottom:8px">${esc(s.t)}</div>
+  <ul class="sugg">${REASONS.map(r=>`<li><button data-reason="${esc(r)}"><div class="t">${esc(r)}</div></button></li>`).join('')}</ul>`; }
+function renderSettings(){
+  $('#body').innerHTML=`<div class="label"><span>Impostazioni del giro</span></div>
+    <div class="setting"><label>Partenza</label><button class="btn wide" id="setStart" style="justify-content:flex-start">${S.start?esc(S.start.t+(S.start.s?', '+S.start.s:'')):'Scegli la partenza'}</button></div>
+    <div class="setting"><label for="sOra">Ora di partenza</label><input type="time" id="sOra" value="${esc(S.ora)}"></div>
+    <div class="setting"><label for="sSosta">Minuti per ogni fermata</label><input type="text" inputmode="numeric" id="sSosta" value="${esc(S.sosta)}"></div>
+    <div class="setting"><label for="sCom">Comune di oggi (aiuta la lista incollata)</label><input type="text" id="sCom" value="${esc(S.comune)}" placeholder="Es. Bientina"></div>
+    <label class="check"><input type="checkbox" id="sRit" ${S.ritorno?'checked':''}> Torna alla partenza a fine giro</label>
+    <div class="setting"><label>Navigatore</label><div class="seg">${[['apple','Apple Mappe'],['google','Google Maps'],['waze','Waze']].map(([v,l])=>`<button type="button" data-nav="${v}" aria-pressed="${S.nav===v}">${l}</button>`).join('')}</div></div>
+    <p class="hint">Le fermate restano salvate solo su questo telefono.</p>
+    <button class="btn primary big wide" id="sOk">Salva</button>`;
+}
+function renderPaste(){
+  $('#body').innerHTML=`<div class="label"><span>Incolla o importa una lista</span></div>
+    <p class="hint">Una chiamata per riga: indirizzo, poi telefono e note separati da un trattino.</p>
+    <textarea id="pTxt" style="width:100%;min-height:180px;font:inherit;color:var(--fg);background:var(--raised);border:1px solid var(--line);border-radius:10px;padding:10px" placeholder="Via Roma 12 - 333 1234567 - divano&#10;Via Puccini 4, Quattro Strade - frigorifero"></textarea>
+    <div class="row" style="padding-top:8px"><label class="btn grow" for="pFile">Importa file CSV</label><input type="file" id="pFile" accept=".csv,.txt,text/csv,text/plain" hidden>
+    <button class="btn primary grow" id="pGo">Aggiungi tutte</button></div>
+    <div id="busy" hidden><div class="bar"><i id="busybar"></i></div><p class="hint" id="busytxt"></p></div>`;
+}
+function busy(t,p){const e=$('#busy');if(!e)return;e.hidden=!t;if(t){$('#busytxt').textContent=t;if(p!=null)$('#busybar').style.width=p+'%'}}
+
+// ---------- mappa
+function initMap(){ if(typeof L==='undefined') return;
+  map=L.map('map',{zoomControl:false,attributionControl:true}).setView([43.66,10.63],12);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
+  layer=L.layerGroup().addTo(map);
+  map.on('contextmenu',async e=>{ toast('Cerco l\'indirizzo qui…');
+    try{ const r=await fetch(`https://photon.komoot.io/reverse?lat=${e.latlng.lat}&lon=${e.latlng.lng}`); const j=await r.json();
+      const f=j.features[0]; const p=f?fmt(f.properties):{t:'Punto sulla mappa',s:''};
+      const s=addStop({t:p.t||'Punto sulla mappa',s:p.s,lat:e.latlng.lat,lon:e.latlng.lng}); view={name:'detail',id:s.id}; sheet('full'); render(); }
+    catch(err){ toast('Servizio indirizzi non raggiungibile'); } }); }
+function drawMap(focus){ if(!map) return; layer.clearLayers();
+  const pin=(bg,t)=>L.divIcon({className:'',html:`<div class="pin" style="background:${bg}">${t}</div>`,iconSize:[28,28],iconAnchor:[14,14]});
+  const css=getComputedStyle(document.documentElement);
+  if(S.start) L.marker([S.start.lat,S.start.lon],{icon:pin('#222','P')}).addTo(layer);
+  const list=S.opt?S.order.map(byId):S.stops;
+  list.forEach((s,i)=>{const bg=s.failed?css.getPropertyValue('--warn'):s.done?css.getPropertyValue('--done'):COLORS[s.color];
+    L.marker([s.lat,s.lon],{icon:pin(bg,S.opt?i+1:'•')}).on('click',()=>{view={name:'detail',id:s.id};sheet();render()}).addTo(layer)});
+  if(S.opt&&S.start){const line=S.geom||[[S.start.lat,S.start.lon],...list.map(s=>[s.lat,s.lon]),...(S.ritorno?[[S.start.lat,S.start.lon]]:[])];
+    L.polyline(line,{color:css.getPropertyValue('--accent').trim(),weight:5,opacity:.85,dashArray:S.geom?null:'6 8'}).addTo(layer);}
+  if(focus) map.setView([focus.lat,focus.lon],16);
+}
+function fit(){ if(!map) return; const pts=[...(S.start?[[S.start.lat,S.start.lon]]:[]),...S.stops.map(s=>[s.lat,s.lon])];
+  if(pts.length===1) map.setView(pts[0],15); else if(pts.length) map.fitBounds(pts,{padding:[40,40],paddingBottomRight:[0,$('#sheet').offsetHeight]}); }
+
+// ---------- eventi
+$('#q').addEventListener('focus',()=>{ if(view.name!=='search'){view={name:'search',mode:view.mode==='start'?'start':'stop'};sugg=[];} sheet('full'); render(); });
+$('#q').addEventListener('input',()=>{ $('#qClear').hidden=!$('#q').value; clearTimeout(tmr);
+  const q=$('#q').value.trim(); if(q.length<3){sugg=[];view.loading=false;return render()}
+  view.loading=true; view.err=false; render();
+  tmr=setTimeout(async()=>{ try{ sugg=await suggest(q); view.err=false }catch(e){ if(e.name==='AbortError')return; sugg=[]; view.err=true }
+    view.loading=false; render(); },350); });
+$('#qClear').onclick=()=>{ $('#q').value=''; sugg=[]; $('#q').focus(); render(); };
+$('#back').onclick=()=>{ if(view.name==='detail') saveDetail(); $('#q').value=''; $('#q').blur(); view={name:'list'}; sugg=[]; sheet(); render(); fit(); };
+$('#handle').onclick=()=>{ const el=$('#sheet'); sheet(el.classList.contains('min')?null:el.classList.contains('full')?'min':'full'); };
+$('#fabFit').onclick=fit;
+$('#fabSet').onclick=()=>openSettings();
+function openSettings(){ view={name:'settings'}; sheet('full'); render(); }
+
+function saveDetail(){ const s=byId(view.id); if(!s) return;
+  const n=$('#dNote'),t=$('#dTel'); if(n) s.note=n.value.trim(); if(t) s.phone=t.value.replace(/[^\d+]/g,''); save(); }
+
+document.addEventListener('click',async e=>{
+  const el=e.target.closest('[data-sugg],[data-gps],[data-open],[data-start],[data-done],[data-fail],[data-undo],[data-set],[data-step],[data-color],[data-nav],button');
+  if(!el) return; const d=el.dataset;
+  if(d.sugg!=null){ const p=sugg[+d.sugg];
+    if(view.mode==='start'){ S.start={t:p.t,s:p.s,lat:p.lat,lon:p.lon}; if(S.opt) await routeGeom(); save(); $('#q').value=''; $('#q').blur(); view={name:'settings'}; render(); toast('Partenza impostata'); return; }
+    const s=addStop(p); $('#q').value=''; $('#q').blur(); sugg=[]; view={name:'detail',id:s.id}; sheet('full'); render(); return; }
+  if(d.gps){ if(!navigator.geolocation){toast('Posizione non disponibile su questo telefono');return}
+    toast('Cerco la tua posizione…');
+    navigator.geolocation.getCurrentPosition(p=>{S.start={t:'Posizione attuale',s:'',lat:p.coords.latitude,lon:p.coords.longitude};save();$('#q').value='';$('#q').blur();view={name:'settings'};render();toast('Partenza impostata')},
+      ()=>toast('Consenti l\'accesso alla posizione o scrivi l\'indirizzo'),{enableHighAccuracy:true,timeout:10000}); return; }
+  if(d.start){ view={name:'search',mode:'start'}; sugg=[]; sheet('full'); render(); $('#q').focus(); return; }
+  if(d.open!=null){ view={name:'detail',id:+d.open}; sheet(); render(); return; }
+  if(d.fail&&view.name!=='fail'){ if(view.name==='detail') saveDetail(); view={name:'fail',id:+d.fail}; sheet('full'); render(); return; }
+  if(d.reason){ const s=byId(view.id); s.failed=true; s.done=false; s.reason=d.reason; save(); view={name:'list'}; sheet(); render(); $('#body').scrollTop=0; toast('Segnata: '+d.reason); return; }
+  if(d.move){ const i=S.order.indexOf(view.id), j=i+ +d.move; if(j<0||j>=S.order.length) return;
+    [S.order[i],S.order[j]]=[S.order[j],S.order[i]]; estimate(); save(); renderDetail(); toast('Ora è la fermata '+(j+1)); return; }
+  if(d.done||d.fail||d.undo){ const id=+(d.done||d.fail||d.undo), s=byId(id); if(view.name==='detail') saveDetail();
+    s.done=!!d.done; s.failed=false; if(d.undo) s.reason=''; save(); if(view.name==='detail'){view={name:'list'};sheet()} render(); $('#body').scrollTop=0;
+    if(d.done) toast('Fatta ✓'); return; }
+  if(d.set){ const s=byId(view.id); s[d.set]=d.v; save(); renderDetail(); return; }
+  if(d.step){ const s=byId(view.id); s.pezzi=Math.max(1,s.pezzi+ +d.step); $('#dPz').textContent=s.pezzi; save(); return; }
+  if(d.color!=null){ const s=byId(view.id); saveDetail(); s.color=+d.color; save(); renderDetail(); return; }
+  if(d.nav){ S.nav=d.nav; save(); document.querySelectorAll('[data-nav]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.nav===S.nav)); return; }
+  switch(el.id){
+    case 'dOk': saveDetail(); view={name:'list'}; sheet(); render(); fit(); break;
+    case 'dDel': removeStop(view.id); view={name:'list'}; sheet(); render(); toast('Fermata eliminata'); break;
+    case 'optBtn': optimize(); break;
+    case 'revBtn': { const c=S.order.filter(id=>closed(byId(id))), o=S.order.filter(id=>!closed(byId(id))).reverse(); S.order=c.concat(o); await routeGeom(); save(); render(); toast('Giro invertito'); break; }
+    case 'pasteBtn': view={name:'paste'}; sheet('full'); render(); break;
+    case 'newBtn': $('#newConf').hidden=false; break;
+    case 'newNo': $('#newConf').hidden=true; break;
+    case 'newYes': Object.assign(S,{stops:[],order:[],legs:[],geom:null,km:0,min:0,opt:false,est:false}); save(); render(); toast('Giro cancellato'); break;
+    case 'setStart': view={name:'search',mode:'start'}; sugg=[]; render(); $('#q').focus(); break;
+    case 'sOk': S.ora=$('#sOra').value; S.sosta=parseInt($('#sSosta').value)||5; S.comune=$('#sCom').value.trim();
+      const r=$('#sRit').checked; const ch=r!==S.ritorno; S.ritorno=r; if(S.opt&&ch) await routeGeom(); save(); view={name:'list'}; sheet(); render(); fit(); toast('Salvato'); break;
+    case 'pGo': await pasteAll(); break;
+  }
+});
+document.addEventListener('change',async e=>{ if(e.target.id!=='pFile') return; const f=e.target.files[0]; if(!f) return;
+  const rows=(await f.text()).split(/\r?\n/).map(r=>r.split(/[;\t]|,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(c=>c.replace(/^"|"$/g,'').trim()).filter(Boolean)).filter(r=>r.length);
+  if(rows.length&&/indirizzo|via|address/i.test(rows[0].join(' '))&&!/\d/.test(rows[0].join(''))) rows.shift();
+  const lines=rows.map(r=>r.length>1&&/^\d+[a-z]?$/i.test(r[1])?[r[0]+' '+r[1],...r.slice(2)].join(' - '):r.join(' - '));
+  $('#pTxt').value=($('#pTxt').value.trim()?$('#pTxt').value.trim()+'\n':'')+lines.join('\n'); toast(lines.length+' righe importate'); e.target.value=''; });
+
+function parseLine(line){ let t=line.trim(); if(!t) return null; let phone='';
+  const m=t.match(/(\+?\d[\d .\/]{6,}\d)/g); if(m){const p=m.find(x=>x.replace(/\D/g,'').length>=8); if(p){phone=p.replace(/[^\d+]/g,''); t=t.replace(p,' ')}}
+  const parts=t.split(/\s[-–|;]\s|\s*\|\s*|;/).map(x=>x.trim()).filter(Boolean);
+  return {addr:(parts.shift()||'').replace(/[,\s-]+$/,''), phone, note:parts.join(' · ')}; }
+async function pasteAll(){
+  const lines=$('#pTxt').value.split('\n').map(parseLine).filter(Boolean); if(!lines.length){toast('Scrivi almeno una riga');return}
+  $('#pGo').disabled=true; const bad=[]; let n=0;
+  for(const l of lines){ busy('Cerco '+l.addr+'…',n/lines.length*100);
+    const q=S.comune&&!l.addr.toLowerCase().includes(S.comune.toLowerCase())?l.addr+', '+S.comune:l.addr;
+    let g=null; try{g=await geocode(q+', Italia')}catch(e){}
+    if(g){const s=addStop(g); s.phone=l.phone; s.note=l.note;} else bad.push(l); n++; }
+  save(); busy(null); $('#pGo').disabled=false;
+  if(bad.length){ $('#pTxt').value=bad.map(l=>[l.addr,l.phone,l.note].filter(Boolean).join(' - ')).join('\n');
+    toast(`${lines.length-bad.length} aggiunte, ${bad.length} non trovate: correggile qui`); }
+  else { view={name:'list'}; sheet(); render(); fit(); toast(lines.length+' fermate aggiunte'); }
+}
+
+// ---------- avvio
+initMap(); render(); fit();
+if(!S.start) setTimeout(()=>toast('Per iniziare imposta la partenza: tocca la riga P'),600);
+</script>
+</body>
+</html>
