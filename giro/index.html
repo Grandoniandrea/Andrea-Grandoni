@@ -174,25 +174,51 @@ function fmt(p){ // proprietà Photon -> titolo e sottotitolo
     .filter((x,i,a)=>a.indexOf(x)===i).join(', ');
   return {t, s};
 }
+const norm=x=>String(x||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[’'`]/g,"'");
+const compact=x=>norm(x).replace(/[^a-z0-9]/g,'');
+function splitQuery(q){ // "Via sant' antonio 57 pisa" -> via "via sant'antonio", civico 57, resto "pisa"
+  let t=norm(q).replace(/'\s+/g,"'").replace(/\s+/g,' ').trim();
+  const m=t.match(/(?:^|[\s,])(\d+\s*(?:\/\s*)?[a-z]?)(?=\s|,|$)/);
+  let num='', street=t, rest='';
+  if(m){ num=m[1].replace(/\s+/g,''); street=t.slice(0,m.index).replace(/[,\s]+$/,''); rest=t.slice(m.index+m[0].length).replace(/^[,\s]+/,''); }
+  else { const c=t.split(','); street=c[0].trim(); rest=c.slice(1).join(' ').trim(); }
+  return {num, street, rest};
+}
+async function photon(q,c,signal){
+  const r=await fetch(`https://photon.komoot.io/api/?limit=12&lat=${c.lat}&lon=${c.lng}&location_bias_scale=0.3&q=${encodeURIComponent(q)}`,{signal});
+  return (await r.json()).features.filter(f=>(f.properties.countrycode||'').toUpperCase()==='IT');
+}
 async function suggest(q){
   if(ctrl) ctrl.abort(); ctrl=new AbortController();
-  const c=center();
-  let q2=q; if(S.comune && !q.toLowerCase().includes(S.comune.toLowerCase()) && !/,/.test(q)) q2=q; // il comune serve solo come preferenza di zona
-  const url=`https://photon.komoot.io/api/?limit=8&lat=${c.lat}&lon=${c.lng}&location_bias_scale=0.4&q=${encodeURIComponent(q2)}`;
-  const r=await fetch(url,{signal:ctrl.signal}); const j=await r.json();
-  const seen=new Set();
-  // civico scritto dall'utente: "via x 57", "via x, 57", "via x 57/a"
-  const mm=q.match(/[\s,](\d+\s*(?:\/\s*)?[a-zA-Z]?)\s*(?:,|$)/); const num=mm?mm[1].replace(/\s+/g,''):'';
-  const items=j.features.filter(f=>(f.properties.countrycode||'').toUpperCase()==='IT').map(f=>{
-    const p=f.properties; let {t,s}=fmt(p); let approx=false;
-    const street=p.street||(p.osm_key==='highway'?p.name:'');
-    // OpenStreetMap spesso non ha il civico: tengo la via e aggiungo il numero scritto
-    if(num && street && !p.housenumber){ t=street+', '+num; approx=true; }
-    else if(num && p.housenumber && p.housenumber.toLowerCase()!==num.toLowerCase()){ approx=true; t=street+', '+num; }
-    return {t,s,approx,lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0]};
-  }).filter(x=>{const k=x.t+'|'+x.s; if(!x.t||seen.has(k))return false; seen.add(k); return true});
-  items.sort((a,b)=>(a.approx?1:0)-(b.approx?1:0));
-  return items.slice(0,6);
+  const c=center(); const {num,street,rest}=splitQuery(q);
+  const city=rest||'';
+  const qs=[[street,num,city].filter(Boolean).join(' ')];
+  if(num) qs.push([street,city].filter(Boolean).join(' '));
+  const res=(await Promise.all(qs.map(x=>photon(x,c,ctrl.signal)))).flat();
+  // parole della via scritta: tutte devono comparire nel nome della via trovata
+  const words=street.split(/[\s']+/).map(compact).filter(w=>w.length>=2);
+  const cityW=city.split(/\s+/).map(compact).filter(w=>w.length>=2);
+  const seen=new Set(), out=[];
+  for(const f of res){ const p=f.properties;
+    const st=p.street||(p.osm_key==='highway'?p.name:''); if(!st) continue;
+    const cs=compact(st);
+    if(!words.every(w=>cs.includes(w))) continue;
+    const town=compact([p.city,p.town,p.village,p.district,p.county,p.postcode].join(' '));
+    if(cityW.length && !cityW.every(w=>town.includes(w))) continue;
+    let {t,s}=fmt(p); let approx=false;
+    if(num){ if(p.housenumber && compact(p.housenumber)===compact(num)) t=st+', '+p.housenumber; else { t=st+', '+num.toUpperCase(); approx=true; } }
+    const k=compact(t+s); if(seen.has(k)) continue; seen.add(k);
+    out.push({t,s,approx,lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0]});
+  }
+  out.sort((a,b)=>(a.approx?1:0)-(b.approx?1:0));
+  return out.slice(0,6);
+}
+function typedOption(q){ // l'indirizzo così come l'hai scritto: il navigatore trova il civico
+  const {num,street,rest}=splitQuery(q); if(!street||!num) return null;
+  const cap=x=>x.replace(/(^|[\s'])([a-z])/g,(m,a,b)=>a+b.toUpperCase());
+  const base=sugg[0]||null; const cc=center();
+  return {t:cap(street)+', '+num.toUpperCase(), s:base?base.s:(cap(rest)||S.comune||''), approx:true,
+    lat:base?base.lat:cc.lat, lon:base?base.lon:(cc.lng??cc.lon), typed:true};
 }
 let lastN=0;
 async function geocode(q){ // per incolla lista: Nominatim, 1 al secondo
@@ -337,6 +363,8 @@ function renderSearch(){
   h+=`<ul class="sugg"><li class="sec">${view.mode==='start'?'Scegli la partenza':'Aggiungi una nuova fermata'}</li>`;
   if(view.mode==='start') h+=`<li><button data-gps="1"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7"/></svg><div><div class="t">Posizione attuale</div><div class="s">Usa il GPS del telefono</div></div></button></li>`;
   sugg.forEach((x,i)=>{h+=`<li><button data-sugg="${i}"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-4l-3 3-3-3H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M12 7.5v6M9 10.5h6"/></svg><div><div class="t">${esc(x.t)}${x.approx?'<span class="chip">CIVICO SULLA VIA</span>':''}</div><div class="s">${esc(x.s)}</div></div></button></li>`});
+  const ty=q.length>=5&&!view.loading?typedOption(q):null;
+  if(ty&&!sugg.some(x=>compact(x.t)===compact(ty.t))) h+=`<li><button data-typed="1"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4l10-10-4-4L4 16v4z"/></svg><div><div class="t">Usa "${esc(ty.t)}"</div><div class="s">Come l'hai scritto${ty.s?' · '+esc(ty.s):''}. Il civico lo trova il navigatore</div></div></button></li>`;
   h+=`</ul>`;
   if(sugg.some(x=>x.approx)) h+=`<p class="hint">"Civico sulla via": sulla mappa il punto è a metà via, ma il navigatore ti porta al numero esatto.</p>`;
   if(q.length>=3&&!sugg.length&&!view.loading) h+=`<p class="empty">Nessun indirizzo trovato. Prova ad aggiungere il comune, per esempio "${esc(q)}, Bientina".</p>`;
@@ -431,8 +459,9 @@ function saveDetail(){ const s=byId(view.id); if(!s) return;
   const n=$('#dNote'),t=$('#dTel'); if(n) s.note=n.value.trim(); if(t) s.phone=t.value.replace(/[^\d+]/g,''); save(); }
 
 document.addEventListener('click',async e=>{
-  const el=e.target.closest('[data-sugg],[data-gps],[data-open],[data-start],[data-done],[data-fail],[data-undo],[data-set],[data-step],[data-color],[data-nav],button');
+  const el=e.target.closest('[data-typed],[data-sugg],[data-gps],[data-open],[data-start],[data-done],[data-fail],[data-undo],[data-set],[data-step],[data-color],[data-nav],button');
   if(!el) return; const d=el.dataset;
+  if(d.typed){ const p=typedOption($('#q').value); if(!p) return; const s=addStop(p); $('#q').value=''; $('#q').blur(); sugg=[]; view={name:'detail',id:s.id}; sheet('full'); render(); return; }
   if(d.sugg!=null){ const p=sugg[+d.sugg];
     if(view.mode==='start'){ S.start={t:p.t,s:p.s,lat:p.lat,lon:p.lon}; if(S.opt) await routeGeom(); save(); $('#q').value=''; $('#q').blur(); view={name:'settings'}; render(); toast('Partenza impostata'); return; }
     const s=addStop(p); $('#q').value=''; $('#q').blur(); sugg=[]; view={name:'detail',id:s.id}; sheet('full'); render(); return; }
