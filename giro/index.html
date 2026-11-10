@@ -181,9 +181,18 @@ async function suggest(q){
   const url=`https://photon.komoot.io/api/?limit=8&lat=${c.lat}&lon=${c.lng}&location_bias_scale=0.4&q=${encodeURIComponent(q2)}`;
   const r=await fetch(url,{signal:ctrl.signal}); const j=await r.json();
   const seen=new Set();
-  return j.features.filter(f=>(f.properties.countrycode||'').toUpperCase()==='IT').map(f=>{
-    const {t,s}=fmt(f.properties); return {t,s,lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0]};
-  }).filter(x=>{const k=x.t+'|'+x.s; if(!x.t||seen.has(k))return false; seen.add(k); return true}).slice(0,6);
+  // civico scritto dall'utente: "via x 57", "via x, 57", "via x 57/a"
+  const mm=q.match(/[\s,](\d+\s*(?:\/\s*)?[a-zA-Z]?)\s*(?:,|$)/); const num=mm?mm[1].replace(/\s+/g,''):'';
+  const items=j.features.filter(f=>(f.properties.countrycode||'').toUpperCase()==='IT').map(f=>{
+    const p=f.properties; let {t,s}=fmt(p); let approx=false;
+    const street=p.street||(p.osm_key==='highway'?p.name:'');
+    // OpenStreetMap spesso non ha il civico: tengo la via e aggiungo il numero scritto
+    if(num && street && !p.housenumber){ t=street+', '+num; approx=true; }
+    else if(num && p.housenumber && p.housenumber.toLowerCase()!==num.toLowerCase()){ approx=true; t=street+', '+num; }
+    return {t,s,approx,lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0]};
+  }).filter(x=>{const k=x.t+'|'+x.s; if(!x.t||seen.has(k))return false; seen.add(k); return true});
+  items.sort((a,b)=>(a.approx?1:0)-(b.approx?1:0));
+  return items.slice(0,6);
 }
 let lastN=0;
 async function geocode(q){ // per incolla lista: Nominatim, 1 al secondo
@@ -255,7 +264,7 @@ const hhmm=t=>{t=Math.round(t)%1440;return String(Math.floor(t/60)).padStart(2,'
 
 // ---------- aggiunta fermata
 function addStop(p){
-  const s={id:S.nextId++, t:p.t, s:p.s, lat:p.lat, lon:p.lon, phone:'', note:'', tipo:'ritiro', pezzi:1, pos:'auto', color:0, done:false, failed:false};
+  const s={id:S.nextId++, t:p.t, s:p.s, approx:!!p.approx, lat:p.lat, lon:p.lon, phone:'', note:'', tipo:'ritiro', pezzi:1, pos:'auto', color:0, done:false, failed:false};
   S.stops.push(s);
   if(S.opt){ // inserimento dove allunga meno, dopo le fermate chiuse
     const from=Math.max(0,S.order.findIndex(id=>!closed(byId(id))));
@@ -271,10 +280,15 @@ function removeStop(id){ S.stops=S.stops.filter(s=>s.id!==id); S.order=S.order.f
   if(S.opt){ if(S.order.length) estimate(); else S.opt=false; } save(); }
 
 // ---------- navigatore
-function navUrl(p){const ll=p.lat+','+p.lon;
-  if(S.nav==='google')return'https://www.google.com/maps/dir/?api=1&travelmode=driving&destination='+ll;
-  if(S.nav==='waze')return'https://waze.com/ul?navigate=yes&ll='+ll;
-  return'https://maps.apple.com/?dirflg=d&daddr='+ll;}
+function addrText(p){ // indirizzo completo: il navigatore trova il civico esatto con le sue mappe
+  if(!p.t||p.t==='Punto sulla mappa'||p.t==='Posizione attuale'||!/\d/.test(p.t)) return '';
+  const city=(p.s||'').split(',').map(x=>x.trim()).filter(x=>x&&!/^\d{5}$/.test(x))[0]||'';
+  return [p.t, city, 'Italia'].filter(Boolean).join(', ');
+}
+function navUrl(p){const ll=p.lat+','+p.lon, a=addrText(p);
+  if(S.nav==='google')return'https://www.google.com/maps/dir/?api=1&travelmode=driving&destination='+encodeURIComponent(a||ll);
+  if(S.nav==='waze')return a?'https://waze.com/ul?navigate=yes&q='+encodeURIComponent(a):'https://waze.com/ul?navigate=yes&ll='+ll;
+  return a?'https://maps.apple.com/?dirflg=d&daddr='+encodeURIComponent(a)+'&sll='+ll:'https://maps.apple.com/?dirflg=d&daddr='+ll;}
 
 // ---------- viste
 function render(){
@@ -322,8 +336,9 @@ function renderSearch(){
   const q=$('#q').value.trim(); let h='';
   h+=`<ul class="sugg"><li class="sec">${view.mode==='start'?'Scegli la partenza':'Aggiungi una nuova fermata'}</li>`;
   if(view.mode==='start') h+=`<li><button data-gps="1"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7"/></svg><div><div class="t">Posizione attuale</div><div class="s">Usa il GPS del telefono</div></div></button></li>`;
-  sugg.forEach((x,i)=>{h+=`<li><button data-sugg="${i}"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-4l-3 3-3-3H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M12 7.5v6M9 10.5h6"/></svg><div><div class="t">${esc(x.t)}</div><div class="s">${esc(x.s)}</div></div></button></li>`});
+  sugg.forEach((x,i)=>{h+=`<li><button data-sugg="${i}"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-4l-3 3-3-3H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M12 7.5v6M9 10.5h6"/></svg><div><div class="t">${esc(x.t)}${x.approx?'<span class="chip">CIVICO SULLA VIA</span>':''}</div><div class="s">${esc(x.s)}</div></div></button></li>`});
   h+=`</ul>`;
+  if(sugg.some(x=>x.approx)) h+=`<p class="hint">"Civico sulla via": sulla mappa il punto è a metà via, ma il navigatore ti porta al numero esatto.</p>`;
   if(q.length>=3&&!sugg.length&&!view.loading) h+=`<p class="empty">Nessun indirizzo trovato. Prova ad aggiungere il comune, per esempio "${esc(q)}, Bientina".</p>`;
   if(view.loading) h+=`<p class="empty">Cerco…</p>`;
   if(view.err) h+=`<p class="empty" style="color:var(--warn)">Servizio indirizzi non raggiungibile. Controlla la connessione.</p>`;
@@ -469,7 +484,7 @@ async function pasteAll(){
   for(const l of lines){ busy('Cerco '+l.addr+'…',n/lines.length*100);
     const q=S.comune&&!l.addr.toLowerCase().includes(S.comune.toLowerCase())?l.addr+', '+S.comune:l.addr;
     let g=null; try{g=await geocode(q+', Italia')}catch(e){}
-    if(g){const s=addStop(g); s.phone=l.phone; s.note=l.note;} else bad.push(l); n++; }
+    if(g){const s=addStop(g); s.phone=l.phone; s.note=l.note; if(!/\d/.test(s.t)&&/\d/.test(l.addr)){s.t=l.addr; s.approx=true;}} else bad.push(l); n++; }
   save(); busy(null); $('#pGo').disabled=false;
   if(bad.length){ $('#pTxt').value=bad.map(l=>[l.addr,l.phone,l.note].filter(Boolean).join(' - ')).join('\n');
     toast(`${lines.length-bad.length} aggiunte, ${bad.length} non trovate: correggile qui`); }
