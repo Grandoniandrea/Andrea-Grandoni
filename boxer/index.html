@@ -164,7 +164,46 @@ details p{color:var(--muted);font-size:14px;line-height:1.5;margin:8px 0 0}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* Challenge */
-[data-screen="challenge"]{background:var(--cream);color:var(--ink)}
+[data-screen="challenge"]{background:var(--cream);color:var(--ink);padding-left:12px;padding-right:12px}
+.ch-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.ch-top .logo{color:var(--ink)}
+.ch-title{background:var(--cream2);border-radius:14px;padding:14px;text-align:center;font:700 clamp(21px,6.4vw,26px) var(--head);letter-spacing:.02em;margin:0 0 12px}
+.ch-info{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #d9d2c4;padding:0 4px 10px;margin-bottom:10px}
+.ch-info small,.ch-prog small{display:block;font-size:12px;color:var(--ink-muted)}
+.ch-info b{font-size:15px}
+.ch-info div+div{border-left:1px solid #d9d2c4;padding-left:12px}
+.ch-prog{padding:0 4px;margin-bottom:12px}
+.ch-prog b{font:700 22px var(--head)}
+.ch-prog span{font-size:14px;color:var(--ink-muted)}
+.ch-bar{height:12px;border-radius:6px;background:#ddd6c8;margin-top:8px;overflow:hidden}
+.ch-bar i{display:block;height:100%;background:linear-gradient(90deg,#16161a,#ff7a1a);border-radius:6px;min-width:12px}
+.ch-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.ch-stats div{background:#fff;border-radius:14px;padding:10px;text-align:center}
+.ch-stats b{display:block;font:700 22px var(--head)}
+.ch-stats small{font-size:11.5px;color:var(--ink-muted)}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.day-tile{display:flex;flex-direction:column;align-items:center;gap:3px;padding:0;min-width:0}
+.day-tile .th{position:relative;width:100%;aspect-ratio:1;border-radius:10px;background:var(--ink);overflow:hidden;display:grid;place-items:center}
+.day-tile .th .fighter{width:92%;margin-top:6%}
+.day-tile .th .fighter svg{filter:drop-shadow(0 0 2px var(--or))}
+.day-tile small{font-size:9.5px;color:var(--ink-muted);white-space:nowrap}
+.day-tile[data-status="locked"] .th .fighter{opacity:.35}
+.day-tile[data-status="locked"] .th::after{content:'';position:absolute;inset:0;background:rgba(22,22,26,.35) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f3efe6' stroke-width='2.2' stroke-linecap='round'%3E%3Crect x='5' y='11' width='14' height='10' rx='2'/%3E%3Cpath d='M8 11V8a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E") center/42% no-repeat}
+.day-tile[data-status="open"] .th{box-shadow:0 0 0 2px var(--or),0 0 14px rgba(255,122,26,.6)}
+.day-tile[data-status="open"] small{color:var(--ink);font-weight:800}
+.day-tile[data-status="done"] .th::after{content:'✓';position:absolute;right:3px;top:3px;width:16px;height:16px;border-radius:50%;background:var(--or);color:#160700;font-size:10px;font-weight:800;display:grid;place-items:center}
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:30;opacity:0;transition:opacity .2s}
+.backdrop.show{opacity:1}
+#day-sheet{position:fixed;left:0;right:0;bottom:0;z-index:31;max-width:480px;margin:0 auto;background:var(--bg);color:var(--text);border-radius:24px 24px 0 0;padding:14px 16px calc(20px + var(--safe-b));transform:translateY(100%);transition:transform .28s ease-out}
+#day-sheet.show{transform:none}
+#day-sheet .grab{width:44px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 10px}
+#day-sheet .hero{background:radial-gradient(circle at 50% 60%,rgba(255,122,26,.18),transparent 65%),#000;border-radius:18px;height:220px;display:grid;place-items:center;margin-bottom:14px}
+#day-sheet .hero .fighter{width:150px}
+#day-sheet small.k{color:var(--or2);font-weight:700;letter-spacing:.08em;font-size:12px}
+#day-sheet h2{font:700 26px var(--head);text-transform:uppercase;margin:2px 0 10px;line-height:1.1}
+.meta{display:flex;gap:16px;color:var(--muted);font-size:14px;margin-bottom:12px;flex-wrap:wrap}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.tags span{background:var(--card);border-radius:999px;padding:6px 10px;font-size:13px}
 
 .toast{position:fixed;left:50%;bottom:calc(24px + var(--safe-b));transform:translate(-50%,20px);background:#222;color:#fff;padding:12px 18px;border-radius:999px;font-size:14px;font-weight:600;opacity:0;transition:.25s;z-index:50;max-width:calc(100% - 32px);text-align:center;pointer-events:none}
 .toast.show{opacity:1;transform:translate(-50%,0)}
@@ -292,8 +331,8 @@ details p{color:var(--muted);font-size:14px;line-height:1.5;margin:8px 0 0}
 <div class="toast" id="toast" role="status"></div>
 
 <script type="module">
-import { QUESTIONS, PRICES, validateAnswer, bmi, projection } from './logic.js';
-import { createFighter, poseSVG } from './fighter.js';
+import { QUESTIONS, PRICES, validateAnswer, bmi, projection, PROGRAM, MOVES, dayStatus, buildWorkout } from './logic.js';
+import { createFighter, poseSVG, fighterThumb } from './fighter.js';
 
 // ---------- state ----------
 const KEY = 'boxer.v1';
@@ -570,9 +609,76 @@ screens.checkout = () => {
   return () => clearTimeout(h);
 };
 
-// ---------- challenge / workout (filled in by later tasks) ----------
+// ---------- challenge ----------
+const level = () => store.get().answers.fitness || 'principiante';
+const workoutMinutes = (day) => Math.round(buildWorkout(day, level()).reduce((a, s) => a + s.seconds, 0) / 60);
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+function closeSheet() {
+  document.querySelector('.backdrop')?.remove();
+  const sh = $('#day-sheet');
+  if (sh) { sh.classList.remove('show'); setTimeout(() => sh.remove(), 250); }
+}
+function openDay(day) {
+  closeSheet();
+  const info = PROGRAM[day - 1];
+  const w = buildWorkout(day, level());
+  const rounds = w.filter((s) => s.phase === 'round').length;
+  const moves = Object.keys(MOVES).filter((m) => w.some((s) => s.combos.some((c) => c.includes(m)))).map((m) => MOVES[m].name);
+  const bd = document.createElement('div'); bd.className = 'backdrop';
+  const sh = document.createElement('div'); sh.id = 'day-sheet'; sh.setAttribute('role', 'dialog'); sh.setAttribute('aria-label', `Giorno ${day}`);
+  sh.innerHTML = `<div class="grab"></div>
+    <div class="hero"><div class="fighter" id="sheet-fighter"></div></div>
+    <small class="k">GIORNO ${day} DI 28</small>
+    <h2>${esc(info.title)}</h2>
+    <div class="meta"><span>⏱ ${workoutMinutes(day)} min</span><span>🥊 ${rounds} round</span><span>📈 ${esc(LEVEL_LABEL[level()])}</span></div>
+    <div class="tags">${moves.map((m) => `<span>${esc(m)}</span>`).join('')}</div>
+    <button class="btn" id="day-start">Inizia allenamento</button>`;
+  document.body.append(bd, sh);
+  const f = createFighter($('#sheet-fighter'));
+  const seq = ['jab', 'cross', 'guard'];
+  let i = 0;
+  const h = setInterval(() => f.pose(seq[i++ % seq.length]), 1000);
+  const close = () => { clearInterval(h); f.destroy(); closeSheet(); };
+  bd.onclick = close;
+  requestAnimationFrame(() => { bd.classList.add('show'); sh.classList.add('show'); });
+  $('#day-start').onclick = () => { clearInterval(h); f.destroy(); closeSheet(); store.set({ currentDay: day }); go('workout', { day }); };
+}
 screens.challenge = () => {
-  $('[data-screen="challenge"]').innerHTML = '<h1 class="h1">Sfida Boxer 28 giorni</h1>';
+  const st = store.get();
+  const a = st.answers;
+  const done = st.completed.length;
+  const mins = st.completed.reduce((sum, d) => sum + workoutMinutes(d), 0);
+  const sec = $('[data-screen="challenge"]');
+  sec.innerHTML = `
+    <div class="ch-top"><div class="logo"><i></i>BOXER</div><span style="font-size:13px;color:var(--ink-muted)">Piano attivo</span></div>
+    <h1 class="ch-title">SFIDA BOXER 28 GIORNI</h1>
+    <div class="ch-info">
+      <div><small>Obiettivo principale</small><b>${esc(GOAL_LABEL[a.goal] || 'Mantenersi in forma')}</b></div>
+      <div><small>Peso attuale</small><b>${esc(a.weight ?? '—')} kg</b></div>
+    </div>
+    <div class="ch-prog"><small>I tuoi progressi</small><b>${done}</b> <span>${done === 1 ? 'allenamento' : 'allenamenti'} su 28</span>
+      <div class="ch-bar"><i style="width:${(done / 28) * 100}%"></i></div></div>
+    <div class="ch-stats">
+      <div><b>${st.streak || 0}</b><small>🔥 giorni di fila</small></div>
+      <div><b>${mins}</b><small>minuti</small></div>
+      <div><b>${mins * 8}</b><small>kcal stimate</small></div>
+    </div>
+    <div class="grid">${PROGRAM.map((d, i) => {
+      const status = dayStatus(d.day, st.completed);
+      return `<button class="day-tile" data-day="${d.day}" data-status="${status}" aria-label="Giorno ${d.day}${status === 'locked' ? ', bloccato' : status === 'done' ? ', completato' : ''}"><span class="th"><span class="fighter">${fighterThumb(i)}</span></span><small>Giorno ${d.day}</small></button>`;
+    }).join('')}</div>`;
+  sec.querySelectorAll('.day-tile').forEach((b) => b.onclick = () => {
+    const day = Number(b.dataset.day);
+    if (b.dataset.status === 'locked') {
+      const prev = Math.max(...[0, ...store.get().completed]) + 1;
+      toast(`Completa il giorno ${Math.min(prev, day - 1)} prima`);
+    } else openDay(day);
+  });
+  // Re-attach the hidden reset to the freshly drawn logo.
+  const logo = sec.querySelector('.logo'); let hold;
+  logo.addEventListener('pointerdown', () => { hold = setTimeout(() => { store.reset(); location.reload(); }, 1500); });
+  ['pointerup', 'pointerleave'].forEach((ev) => logo.addEventListener(ev, () => clearTimeout(hold)));
+  return closeSheet;
 };
 
 // ---------- boot ----------

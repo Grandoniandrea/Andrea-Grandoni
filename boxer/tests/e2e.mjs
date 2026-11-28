@@ -131,7 +131,59 @@ await check('impossible height disables Avanti and shows a message', async () =>
   await page.context().close();
 });
 
-// @@APP-TESTS@@
+// Opens the app straight on the challenge, as a user who already paid.
+async function seeded(extra = {}, url = '') {
+  const page = await newPage();
+  const state = {
+    screen: 'challenge', paid: true, plan: 'w4', completed: [], qIndex: 13,
+    answers: { sex: 'uomo', goal: 'dimagrire', fitness: 'principiante', minutes: '15', height: 178, weight: 84, target_weight: 76 },
+    ...extra,
+  };
+  await page.addInitScript((s) => { if (!sessionStorage.seeded) { localStorage.setItem('boxer.v1', JSON.stringify(s)); sessionStorage.seeded = 1; } }, state);
+  await page.goto(BASE + url);
+  return page;
+}
+
+await check('challenge shows header, progress and 28 days with only day 1 open', async () => {
+  const page = await seeded();
+  await active(page, 'challenge').waitFor();
+  const text = await page.locator('[data-screen="challenge"]').innerText();
+  assert.match(text, /SFIDA BOXER 28 GIORNI/i);
+  assert.match(text, /Perdere peso/);
+  assert.match(text, /84 kg/);
+  assert.match(text, /0 allenamenti su 28/);
+  assert.equal(await page.locator('.day-tile').count(), 28);
+  assert.match(await page.locator('.day-tile').nth(27).innerText(), /Giorno 28/);
+  assert.equal(await page.locator('.day-tile[data-status="open"]').count(), 1);
+  assert.equal(await page.locator('.day-tile').first().getAttribute('data-status'), 'open');
+  assert.equal(await page.locator('.day-tile').nth(1).getAttribute('data-status'), 'locked');
+  assert.deepEqual(page.errors, []);
+  await page.context().close();
+});
+
+await check('tapping a locked day explains why, tapping day 1 opens its sheet', async () => {
+  const page = await seeded();
+  await page.locator('.day-tile').nth(1).click();
+  await page.locator('#toast.show', { hasText: 'Completa il giorno 1 prima' }).waitFor();
+  await page.locator('.day-tile').first().click();
+  const sheet = page.locator('#day-sheet');
+  await sheet.waitFor({ state: 'visible' });
+  assert.match(await sheet.innerText(), /Giorno 1/i);
+  assert.match(await sheet.innerText(), /Le basi: jab e diretto/i);
+  assert.ok(await page.locator('#day-start').isVisible());
+  await page.context().close();
+});
+
+await check('completed days show as done and the next one opens', async () => {
+  const page = await seeded({ completed: [1, 2] });
+  await active(page, 'challenge').waitFor();
+  assert.match(await page.locator('[data-screen="challenge"]').innerText(), /2 allenamenti su 28/);
+  assert.equal(await page.locator('.day-tile').nth(0).getAttribute('data-status'), 'done');
+  assert.equal(await page.locator('.day-tile').nth(2).getAttribute('data-status'), 'open');
+  await page.context().close();
+});
+
+// @@WORKOUT-TESTS@@
 
 await browser.close();
 console.log(`# pass ${passes}\n# fail ${failures}`);
