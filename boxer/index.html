@@ -48,10 +48,10 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid
 .logo i{width:10px;height:10px;border-radius:50%;background:var(--or);box-shadow:0 0 12px var(--or)}
 
 .fighter svg{width:100%;height:auto;display:block;filter:drop-shadow(0 0 3px var(--or)) drop-shadow(0 0 14px rgba(255,122,26,.55))}
-.fighter img,.athlete-img{width:100%;height:auto;display:block;mix-blend-mode:screen;user-select:none;-webkit-user-select:none;animation:breathe 3.2s ease-in-out infinite}
-@keyframes breathe{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.015);filter:brightness(1.12)}}
+.fighter img,.athlete-img{width:100%;height:auto;display:block;mix-blend-mode:screen;user-select:none;-webkit-user-select:none;transform-origin:50% 100%;animation:bounce .85s ease-in-out infinite}
+@keyframes bounce{0%,100%{transform:translateY(0) rotate(0deg) scale(1);filter:brightness(1)}25%{transform:translateY(-2.2%) rotate(-.8deg) scale(1.01);filter:brightness(1.1)}50%{transform:translateY(0) rotate(0deg) scale(1)}75%{transform:translateY(-1.6%) rotate(.8deg) scale(1.008);filter:brightness(1.06)}}
 .fighter img.hit{animation:hit .3s ease-out}
-@keyframes hit{0%{transform:scale(1);filter:brightness(1)}35%{transform:scale(1.045) translateX(-1.5%);filter:brightness(1.6) drop-shadow(0 0 18px rgba(255,122,26,.8))}100%{transform:scale(1);filter:brightness(1)}}
+@keyframes hit{0%{transform:scale(1);filter:brightness(1)}30%{transform:scale(1.08) translate(-4%,-1%) rotate(-2deg);filter:brightness(1.7)}100%{transform:scale(1);filter:brightness(1)}}
 .athlete-thumb{width:100%;height:100%;object-fit:cover;display:block}
 
 /* Welcome */
