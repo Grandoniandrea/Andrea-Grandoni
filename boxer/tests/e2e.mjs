@@ -34,6 +34,7 @@ async function newPage(width = 390, height = 844) {
 }
 
 async function check(name, fn) {
+  if (process.env.ONLY && !name.includes(process.env.ONLY)) return;
   try { await fn(); passes++; console.log(`ok - ${name}`); }
   catch (e) { failures++; console.log(`not ok - ${name}\n  ${e.message.split('\n').slice(0, 4).join('\n  ')}`); }
 }
@@ -183,7 +184,72 @@ await check('completed days show as done and the next one opens', async () => {
   await page.context().close();
 });
 
-// @@WORKOUT-TESTS@@
+async function startDay1(url = '?speed=60') {
+  const page = await seeded({}, url);
+  await active(page, 'challenge').waitFor();
+  await page.locator('.day-tile').first().click();
+  await page.click('#day-start');
+  await active(page, 'workout').waitFor();
+  return page;
+}
+
+await check('workout runs warmup, rounds, rests and cooldown, then completes day 1', async () => {
+  const page = await startDay1();
+  const phases = new Set();
+  let sawCombo = false;
+  for (let i = 0; i < 200; i++) {
+    if (await active(page, 'done').count()) break;
+    const ph = await page.locator('#wo-phase').innerText().catch(() => '');
+    phases.add(ph.toLowerCase().split(' di ')[0].trim());
+    const combo = await page.locator('#wo-combo').innerText().catch(() => '');
+    if (/^[1-6SP]( · [1-6SP])+$/.test(combo.trim())) sawCombo = true;
+    await page.waitForTimeout(100);
+  }
+  await active(page, 'done').waitFor({ timeout: 2000 });
+  for (const p of ['riscaldamento', 'round 1', 'pausa', 'defaticamento']) assert.ok(phases.has(p), `missing phase ${p}: ${[...phases]}`);
+  assert.ok(sawCombo, 'no combo like "1 · 2" shown during rounds');
+  assert.match(await page.locator('[data-screen="done"]').innerText(), /Giorno 1 completato/i);
+  await page.click('#done-back');
+  await active(page, 'challenge').waitFor();
+  assert.match(await page.locator('[data-screen="challenge"]').innerText(), /1 allenamento su 28/);
+  assert.equal(await page.locator('.day-tile').nth(1).getAttribute('data-status'), 'open');
+  assert.deepEqual(page.errors, []);
+  await page.context().close();
+});
+
+await check('pause stops the countdown and resume restarts it', async () => {
+  const page = await startDay1('?speed=20');
+  await page.waitForTimeout(300);
+  await page.click('#wo-pause');
+  const t1 = await page.locator('#wo-time').innerText();
+  await page.waitForTimeout(1200);
+  assert.equal(await page.locator('#wo-time').innerText(), t1);
+  await page.click('#wo-pause');
+  await page.waitForTimeout(1200);
+  assert.notEqual(await page.locator('#wo-time').innerText(), t1);
+  await page.context().close();
+});
+
+await check('rest screen shows PAUSA even if a combo was mid-way', async () => {
+  const page = await startDay1('?speed=1');
+  await page.click('#wo-skip');
+  await page.waitForTimeout(250);
+  await page.click('#wo-skip');
+  await page.waitForTimeout(1600);
+  assert.match(await page.locator('#wo-phase').innerText(), /Pausa/i);
+  assert.equal((await page.locator('#wo-word').innerText()).trim(), 'PAUSA');
+  await page.context().close();
+});
+
+await check('skip jumps to the next phase', async () => {
+  const page = await startDay1('?speed=1');
+  assert.match(await page.locator('#wo-phase').innerText(), /Riscaldamento/i);
+  await page.click('#wo-skip');
+  await page.waitForTimeout(300);
+  assert.match(await page.locator('#wo-phase').innerText(), /Round 1/i);
+  await page.context().close();
+});
+
 
 await browser.close();
 console.log(`# pass ${passes}\n# fail ${failures}`);

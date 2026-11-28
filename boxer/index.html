@@ -205,6 +205,29 @@ details p{color:var(--muted);font-size:14px;line-height:1.5;margin:8px 0 0}
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
 .tags span{background:var(--card);border-radius:999px;padding:6px 10px;font-size:13px}
 
+/* Workout */
+[data-screen="workout"]{background:radial-gradient(circle at 50% 45%,rgba(255,122,26,.14),transparent 60%),var(--bg);padding-bottom:calc(16px + var(--safe-b))}
+.wo-top{display:flex;align-items:center;gap:12px}
+.wo-top button{width:40px;height:40px;border-radius:50%;background:var(--bg2);font-size:18px;flex:none}
+#wo-phase{flex:1;text-align:center;font:700 18px var(--head);letter-spacing:.06em;text-transform:uppercase}
+.wo-segs{display:flex;gap:3px;margin:12px 0 0}
+.wo-segs i{flex:1;height:4px;border-radius:2px;background:var(--line)}
+.wo-segs i.on{background:var(--or)}
+.wo-segs i.now{background:linear-gradient(90deg,var(--or) var(--p,0%),var(--line) var(--p,0%))}
+.wo-stage{position:relative;flex:1;display:flex;align-items:center;justify-content:center;min-height:300px}
+.wo-stage .fighter{width:min(64vw,270px)}
+#wo-word{position:absolute;left:0;right:0;bottom:6%;text-align:center;font:700 clamp(40px,13vw,60px) var(--head);text-transform:uppercase;text-shadow:0 2px 0 #000,0 0 24px rgba(0,0,0,.9)}
+#wo-word span{display:inline-block;animation:pop .22s ease-out}
+#wo-combo{text-align:center;font:700 34px var(--head);color:var(--or2);letter-spacing:.04em;min-height:44px}
+#wo-names{text-align:center;color:var(--muted);font-size:14px;min-height:20px;margin-bottom:6px}
+#wo-tip{text-align:center;color:var(--text);font-size:16px;min-height:22px;margin:0 0 6px}
+#wo-time{text-align:center;font:700 64px var(--head);font-variant-numeric:tabular-nums;line-height:1}
+.wo-ctrl{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.wo-ctrl .btn{padding:15px}
+[data-screen="done"] .paid .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin:10px 0 18px}
+[data-screen="done"] .stats div{background:var(--card);border-radius:14px;padding:12px}
+[data-screen="done"] .stats b{display:block;font:700 26px var(--head)}
+[data-screen="done"] .stats small{color:var(--muted);font-size:12px}
 .toast{position:fixed;left:50%;bottom:calc(24px + var(--safe-b));transform:translate(-50%,20px);background:#222;color:#fff;padding:12px 18px;border-radius:999px;font-size:14px;font-weight:600;opacity:0;transition:.25s;z-index:50;max-width:calc(100% - 32px);text-align:center;pointer-events:none}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -325,13 +348,37 @@ details p{color:var(--muted);font-size:14px;line-height:1.5;margin:8px 0 0}
   </section>
 
   <section data-screen="challenge"></section>
-  <section data-screen="workout"></section>
-  <section data-screen="done"></section>
+  <section data-screen="workout">
+    <div class="wo-top">
+      <button id="wo-exit" aria-label="Esci">✕</button>
+      <span id="wo-phase"></span>
+      <button id="wo-sound" aria-label="Voce attiva">🔊</button>
+    </div>
+    <div class="wo-segs" id="wo-segs"></div>
+    <div class="wo-stage"><div class="fighter" id="wo-fighter"></div><div id="wo-word"></div></div>
+    <p id="wo-tip"></p>
+    <div id="wo-combo"></div>
+    <div id="wo-names"></div>
+    <div id="wo-time">00:00</div>
+    <div class="wo-ctrl">
+      <button class="btn ghost" id="wo-pause">Pausa</button>
+      <button class="btn ghost" id="wo-skip">Salta ›</button>
+    </div>
+  </section>
+  <section data-screen="done">
+    <div class="paid">
+      <div class="ok">✓</div>
+      <h1 class="h1" id="done-title"></h1>
+      <p class="sub" id="done-sub"></p>
+      <div class="stats" id="done-stats"></div>
+      <button class="btn" id="done-back" style="margin-top:auto">Torna alla sfida</button>
+    </div>
+  </section>
 </div>
 <div class="toast" id="toast" role="status"></div>
 
 <script type="module">
-import { QUESTIONS, PRICES, validateAnswer, bmi, projection, PROGRAM, MOVES, dayStatus, buildWorkout } from './logic.js';
+import { QUESTIONS, PRICES, validateAnswer, bmi, projection, PROGRAM, MOVES, dayStatus, buildWorkout, createTimer } from './logic.js';
 import { createFighter, poseSVG, fighterThumb } from './fighter.js';
 
 // ---------- state ----------
@@ -641,7 +688,7 @@ function openDay(day) {
   const close = () => { clearInterval(h); f.destroy(); closeSheet(); };
   bd.onclick = close;
   requestAnimationFrame(() => { bd.classList.add('show'); sh.classList.add('show'); });
-  $('#day-start').onclick = () => { clearInterval(h); f.destroy(); closeSheet(); store.set({ currentDay: day }); go('workout', { day }); };
+  $('#day-start').onclick = () => { primeAudio(); clearInterval(h); f.destroy(); closeSheet(); store.set({ currentDay: day }); go('workout', { day }); };
 }
 screens.challenge = () => {
   const st = store.get();
@@ -679,6 +726,169 @@ screens.challenge = () => {
   logo.addEventListener('pointerdown', () => { hold = setTimeout(() => { store.reset(); location.reload(); }, 1500); });
   ['pointerup', 'pointerleave'].forEach((ev) => logo.addEventListener(ev, () => clearTimeout(hold)));
   return closeSheet;
+};
+
+// ---------- workout ----------
+const SPEED = Math.max(1, Number(params.get('speed')) || 1);
+let audioCtx = null;
+let voiceOn = true;
+function primeAudio() {
+  try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); audioCtx.resume(); } catch { audioCtx = null; }
+  try { if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance(''); u.volume = 0; speechSynthesis.speak(u); } } catch {}
+}
+function tone(freq, dur = 0.15, type = 'sine', gain = 0.25) {
+  if (!audioCtx) return;
+  try {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(gain, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    o.connect(g).connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + dur);
+  } catch {}
+}
+const gong = () => { tone(220, 1.2, 'triangle', 0.35); tone(331, 1.0, 'sine', 0.2); };
+const beep = (hi) => tone(hi ? 1320 : 880, 0.12, 'square', 0.12);
+let itVoice;
+function say(text) {
+  if (!voiceOn || !('speechSynthesis' in window)) return;
+  try {
+    itVoice = itVoice || speechSynthesis.getVoices().find((v) => v.lang?.toLowerCase().startsWith('it'));
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'it-IT'; u.rate = 1.1; if (itVoice) u.voice = itVoice;
+    speechSynthesis.speak(u);
+  } catch {}
+}
+const NUM_WORDS = ['zero', 'uno', 'due', 'tre', 'quattro', 'cinque', 'sei', 'sette'];
+const WARMUP_TIPS = ['Saltella sul posto, leggero sulle punte', 'Ruota le spalle avanti e indietro', 'Guardia alta: mani al mento, gomiti stretti', 'Molleggia sulle gambe e respira'];
+const COOLDOWN_TIPS = ['Rallenta e respira profondamente', 'Allunga le braccia sopra la testa', 'Stira le spalle, un braccio alla volta', 'Ottimo lavoro, quasi finito'];
+const mmss = (n) => `${String(Math.floor(n / 60)).padStart(2, '0')}:${String(n % 60).padStart(2, '0')}`;
+
+screens.workout = (opts) => {
+  const day = opts.day || store.get().currentDay || 1;
+  const segs = buildWorkout(day, level());
+  const rounds = segs.filter((x) => x.phase === 'round').length;
+  const timer = createTimer(segs, () => performance.now() * SPEED);
+  const f = createFighter($('#wo-fighter'));
+  const word = $('#wo-word');
+  $('#wo-segs').innerHTML = segs.map(() => '<i></i>').join('');
+  const bars = [...document.querySelectorAll('#wo-segs i')];
+  let lastIndex = -1, lastCombo = -1, lastSec = -1, lastTip = -1;
+  let comboTimers = [];
+  let wake = null;
+  const requestWake = async () => { try { wake = await navigator.wakeLock?.request('screen'); } catch {} };
+  requestWake();
+  const onVis = () => { if (document.visibilityState === 'visible') requestWake(); };
+  document.addEventListener('visibilitychange', onVis);
+
+  function playCombo(combo) {
+    comboTimers.forEach(clearTimeout); comboTimers = [];
+    $('#wo-combo').textContent = combo.join(' · ');
+    $('#wo-names').textContent = combo.map((m) => MOVES[m].name).join(' · ');
+    say(combo.map((m) => MOVES[m].say).join(', '));
+    combo.forEach((m, k) => comboTimers.push(setTimeout(() => {
+      f.pose(MOVES[m].pose);
+      word.innerHTML = `<span>${esc(MOVES[m].name.split(' ')[0])}</span>`;
+    }, (450 * k) / Math.min(SPEED, 4))));
+  }
+
+  function phaseText(st) {
+    const seg = segs[st.index];
+    if (seg.phase === 'round') return `${seg.label} di ${rounds}`;
+    return seg.label;
+  }
+
+  function render() {
+    const st = timer.state();
+    if (st.finished) { finish(); return; }
+    const seg = segs[st.index];
+    if (st.index !== lastIndex) {
+      lastIndex = st.index; lastCombo = -1; lastTip = -1;
+      comboTimers.forEach(clearTimeout); comboTimers = [];
+      $('#wo-phase').textContent = phaseText(st);
+      $('#wo-combo').textContent = ''; $('#wo-names').textContent = ''; word.textContent = '';
+      bars.forEach((b, i) => { b.className = i < st.index ? 'on' : i === st.index ? 'now' : ''; });
+      if (seg.phase === 'round') {
+        gong();
+        const n = Number(seg.label.split(' ')[1]);
+        say(n === rounds ? 'Ultimo round!' : `Round ${NUM_WORDS[n] || n}`);
+        $('#wo-tip').textContent = '';
+      } else if (seg.phase === 'rest') {
+        gong(); f.pose('guard'); say('Pausa. Respira.');
+        $('#wo-tip').textContent = 'Respira e scuoti le braccia';
+        word.innerHTML = '<span>PAUSA</span>';
+      } else if (seg.phase === 'warmup') {
+        say('Riscaldamento. Muoviti con me.');
+      } else {
+        say('Defaticamento. Ottimo lavoro.');
+      }
+    }
+    const segEl = bars[st.index];
+    if (segEl) segEl.style.setProperty('--p', `${(1 - st.remaining / seg.seconds) * 100}%`);
+    if (seg.phase === 'round' && st.comboIndex !== lastCombo && !st.paused) {
+      lastCombo = st.comboIndex; playCombo(st.combo);
+    }
+    if (seg.phase === 'warmup' || seg.phase === 'cooldown') {
+      const tips = seg.phase === 'warmup' ? WARMUP_TIPS : COOLDOWN_TIPS;
+      const k = Math.min(tips.length - 1, Math.floor((1 - st.remaining / seg.seconds) * tips.length));
+      if (k !== lastTip) {
+        lastTip = k; $('#wo-tip').textContent = tips[k];
+        f.pose(seg.phase === 'warmup' ? ['slip', 'step', 'guard', 'jab'][k] : 'guard');
+      }
+    }
+    if (st.remaining !== lastSec) {
+      lastSec = st.remaining;
+      $('#wo-time').textContent = mmss(st.remaining);
+      if (seg.phase !== 'round' && st.remaining <= 3 && st.remaining > 0 && !st.paused) beep(st.remaining === 1);
+    }
+  }
+  const loop = setInterval(render, 100);
+  render();
+
+  const pauseBtn = $('#wo-pause');
+  pauseBtn.textContent = 'Pausa';
+  pauseBtn.onclick = () => {
+    if (timer.state().paused) { timer.resume(); pauseBtn.textContent = 'Pausa'; }
+    else { timer.pause(); pauseBtn.textContent = 'Riprendi'; comboTimers.forEach(clearTimeout); try { speechSynthesis.cancel(); } catch {} }
+    render();
+  };
+  $('#wo-skip').onclick = () => { timer.skip(); render(); };
+  $('#wo-sound').textContent = voiceOn ? '🔊' : '🔇';
+  $('#wo-sound').onclick = () => { voiceOn = !voiceOn; $('#wo-sound').textContent = voiceOn ? '🔊' : '🔇'; if (!voiceOn) try { speechSynthesis.cancel(); } catch {} };
+  $('#wo-exit').onclick = () => {
+    if (confirm('Vuoi uscire? L’allenamento di oggi non verrà salvato.')) go('challenge');
+  };
+
+  let finished = false;
+  function finish() {
+    if (finished) return; finished = true;
+    gong(); say('Allenamento completato. Grande!');
+    const st = store.get();
+    const today = new Date().toISOString().slice(0, 10);
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const streak = st.lastDone === today ? st.streak : st.lastDone === yesterday ? st.streak + 1 : 1;
+    const completed = st.completed.includes(day) ? st.completed : [...st.completed, day].sort((x, y) => x - y);
+    store.set({ completed, streak, lastDone: today });
+    go('done', { day, minutes: workoutMinutes(day) });
+  }
+
+  return () => {
+    clearInterval(loop); comboTimers.forEach(clearTimeout); f.destroy();
+    document.removeEventListener('visibilitychange', onVis);
+    try { wake?.release(); } catch {}
+    try { speechSynthesis.cancel(); } catch {}
+  };
+};
+
+screens.done = (opts) => {
+  const st = store.get();
+  const day = opts.day || st.currentDay || st.completed.at(-1) || 1;
+  const minutes = opts.minutes || workoutMinutes(day);
+  $('#done-title').textContent = `Giorno ${day} completato`;
+  $('#done-sub').textContent = day < 28 ? `Il giorno ${day + 1} è sbloccato. Ci vediamo domani!` : 'Hai completato la sfida Boxer. Sei un campione!';
+  $('#done-stats').innerHTML = [[minutes, 'minuti'], [minutes * 8, 'kcal stimate'], [st.streak, 'giorni di fila']]
+    .map(([v, k]) => `<div><b>${v}</b><small>${k}</small></div>`).join('');
+  $('#done-back').onclick = () => go('challenge');
 };
 
 // ---------- boot ----------
