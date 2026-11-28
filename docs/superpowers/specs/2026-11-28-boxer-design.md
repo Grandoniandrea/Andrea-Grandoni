@@ -53,8 +53,14 @@ l'idea**: il socio deve aprirla sul telefono e pensare "questa si vende".
    garanzia, FAQ brevi. Al tocco: schermata "pagamento" simulata con una nota
    discreta "Demo — nessun addebito".
 6. **App**
-   - Home: allenamento di oggi, calendario del programma di 28 giorni,
-     serie di giorni consecutivi, minuti e calorie stimate.
+   - Home = **"SFIDA BOXER 28 GIORNI"** (come nel reel di riferimento): in alto
+     obiettivo principale e peso attuale (dal questionario), "I tuoi progressi:
+     N allenamenti su 28" con barra; griglia 6 colonne di 28 caselle "Giorno N"
+     con la miniatura dell'atleta luminoso; i giorni futuri hanno il lucchetto,
+     il successivo si sblocca completando il precedente. Toccando un giorno si
+     apre la scheda dell'allenamento (nome, es. "Condizionamento Total Body",
+     durata, colpi usati, pulsante Inizia). Serie di giorni consecutivi,
+     minuti e calorie stimate.
    - **Allenamento**: riscaldamento → round (es. 3 × 2 min) → pause → defaticamento.
      Colpi numerati (1 jab, 2 diretto, 3 gancio sx, 4 gancio dx,
      5 montante sx, 6 montante dx, più schivate/difese). Combinazioni grandi a
@@ -64,9 +70,24 @@ l'idea**: il socio deve aprirla sul telefono e pensare "questa si vende".
    - Una piccola libreria di altri allenamenti (Principiante, Brucia grassi,
      Velocità, Addominali da pugile) bloccati/sbloccati come nel prodotto vero.
 
-## Stile
-Scuro, energico: fondo quasi nero, accento rosso/arancio, tipografia forte e
-condensata, molto spazio per i pulsanti. Coerente con la cura delle altre app.
+## Stile (deciso guardando il reel di riferimento)
+- **Atleta "ologramma" al neon arancio** su fondo nero: figura di pugile
+  disegnata da noi (SVG con bagliore), animata in guardia, jab, diretto,
+  gancio, montante, schivata. È l'elemento visivo principale: schermata
+  iniziale, miniature dei giorni, allenamento. Arancio scelto da Andrea per
+  distinguersi dal verde di BetterMe.
+- **Scritte grandi, una parola alla volta**, maiuscolo bold condensato, al
+  centro sopra l'atleta (benvenuto e allenamento).
+- Schermate di allenamento/intro scure; schermata Sfida su fondo chiaro
+  crema con caselle scure, come nel reel.
+- Pulsanti grandi, pensata per telefono.
+
+## Riferimento
+Reel pubblicitario BetterMe (30 s) visto il 28/11/2026: atleta verde neon su
+nero con parole singole a schermo, poi schermata "Sfida di shadowboxing" con
+obiettivo, peso, progressi 0–3 su 28, griglia di 28 giorni con lucchetti e
+scheda "Condizionamento Total Body". Ne riprendiamo struttura e ritmo, non
+contenuti, nome o grafica.
 
 ## Lasciato a chi costruisce
 - Testi definitivi, percentuali motivazionali e recensioni d'esempio
