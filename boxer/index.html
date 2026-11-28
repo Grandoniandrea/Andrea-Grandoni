@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Boxer">
+<meta name="theme-color" content="#07070a">
+<title>Boxer</title>
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Inter:wght@400;600;800&display=swap">
+<style>
+:root{
+  --bg:#07070a; --bg2:#111116; --card:#16161b; --line:#2a2a31;
+  --text:#f5f2ee; --muted:#a3a0a8;
+  --or:#ff7a1a; --or2:#ff9a3c; --or-dim:rgba(255,122,26,.16);
+  --cream:#f3efe6; --cream2:#e8e2d5; --ink:#16161a; --ink-muted:#6b6660;
+  --ok:#3ccf7a; --err:#ff5a4f;
+  --head:'Oswald','Arial Narrow',Impact,system-ui,sans-serif;
+  --body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --r:18px;
+  --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);overflow-x:hidden}
+body{min-height:100dvh}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--or2);outline-offset:2px}
+.app{max-width:480px;margin:0 auto;min-height:100dvh;position:relative}
+
+[data-screen]{display:none;min-height:100dvh;padding:calc(16px + var(--safe-t)) 16px calc(24px + var(--safe-b));flex-direction:column}
+[data-screen].active{display:flex;animation:enter .28s ease-out}
+@keyframes enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.btn{display:block;width:100%;padding:17px 20px;border-radius:999px;background:var(--or);color:#160700;font-weight:800;font-size:17px;letter-spacing:.02em;text-align:center;box-shadow:0 8px 28px rgba(255,122,26,.35);transition:transform .1s,opacity .2s}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.35;box-shadow:none;cursor:default}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line);box-shadow:none}
+.foot{margin-top:auto;padding-top:16px;position:sticky;bottom:calc(12px + var(--safe-b))}
+
+.logo{font-family:var(--head);font-weight:700;font-size:22px;letter-spacing:.18em;display:flex;align-items:center;gap:8px;user-select:none;-webkit-user-select:none}
+.logo i{width:10px;height:10px;border-radius:50%;background:var(--or);box-shadow:0 0 12px var(--or)}
+
+.fighter svg{width:100%;height:auto;display:block;filter:drop-shadow(0 0 3px var(--or)) drop-shadow(0 0 14px rgba(255,122,26,.55))}
+
+/* Welcome */
+.welcome-stage{position:relative;flex:1;display:flex;align-items:center;justify-content:center;min-height:380px}
+.welcome-stage .fighter{width:min(78vw,330px)}
+.bigword{position:absolute;left:0;right:0;bottom:4%;text-align:center;font-family:var(--head);font-weight:700;font-size:clamp(44px,14vw,64px);letter-spacing:.01em;text-transform:uppercase;text-shadow:0 2px 0 #000,0 0 24px rgba(0,0,0,.9);pointer-events:none}
+.bigword span{display:inline-block;animation:pop .32s ease-out}
+@keyframes pop{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:none}}
+.tagline{text-align:center;color:var(--muted);font-size:16px;line-height:1.45;margin:0 0 18px}
+.tagline b{color:var(--text)}
+.proof{display:flex;justify-content:center;gap:14px;font-size:12.5px;color:var(--muted);margin-top:14px;flex-wrap:wrap}
+.proof span{white-space:nowrap}
+
+/* Quiz */
+.qtop{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.qtop .back{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--bg2);font-size:20px;flex:none}
+.bar{flex:1;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--or);border-radius:3px;transition:width .3s}
+.qstep{font-size:12px;color:var(--muted);min-width:42px;text-align:right}
+#q-title{font-family:var(--head);font-weight:700;font-size:clamp(26px,8vw,32px);line-height:1.12;margin:0 0 8px;text-transform:uppercase}
+.qhint{color:var(--muted);margin:0 0 20px;font-size:15px}
+.opts{display:grid;gap:10px}
+.opt{display:flex;align-items:center;gap:14px;width:100%;padding:18px;border-radius:var(--r);background:var(--card);border:2px solid transparent;font-size:17px;font-weight:600;text-align:left;transition:border-color .15s,background .15s}
+.opt .em{font-size:24px;width:30px;text-align:center}
+.opt.sel{border-color:var(--or);background:var(--or-dim)}
+.opt .tick{margin-left:auto;width:22px;height:22px;border-radius:6px;border:2px solid var(--line);display:grid;place-items:center;font-size:13px;color:transparent}
+.opt.sel .tick{background:var(--or);border-color:var(--or);color:#160700}
+.numwrap{display:flex;align-items:baseline;justify-content:center;gap:10px;margin:30px 0 8px}
+#num{width:min(60vw,220px);font:700 64px var(--head);background:transparent;border:0;border-bottom:3px solid var(--or);color:var(--text);text-align:center;padding:4px 0;outline:none;-moz-appearance:textfield}
+#num::-webkit-outer-spin-button,#num::-webkit-inner-spin-button{-webkit-appearance:none}
+.unit{font:600 22px var(--body);color:var(--muted)}
+#q-error{color:var(--err);text-align:center;min-height:22px;font-size:14px;margin:6px 0 0}
+#q-error{visibility:visible}
+.bmi-hint{text-align:center;color:var(--muted);font-size:14px;margin-top:10px}
+.info-card{background:var(--card);border-radius:var(--r);padding:20px;text-align:center}
+.info-card .fighter{width:150px;margin:0 auto 8px}
+.info-card p{font-size:17px;line-height:1.5;margin:0}
+
+/* Building */
+.build{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:20px}
+.ring{position:relative;width:180px;height:180px}
+.ring svg{transform:rotate(-90deg)}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font:700 44px var(--head)}
+.checks{list-style:none;padding:0;margin:0;text-align:left;display:grid;gap:10px;width:100%;max-width:320px}
+.checks li{display:flex;gap:10px;align-items:center;color:var(--muted);transition:color .3s}
+.checks li i{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:12px;font-style:normal;flex:none}
+.checks li.done{color:var(--text)}
+.checks li.done i{background:var(--or);border-color:var(--or);color:#160700}
+.review{background:var(--card);border-radius:var(--r);padding:16px;max-width:340px;min-height:112px;text-align:left}
+.review .stars{color:var(--or);letter-spacing:2px}
+.review p{margin:6px 0;font-size:14.5px;line-height:1.45}
+.review small{color:var(--muted)}
+
+/* Plan */
+.h1{font-family:var(--head);font-weight:700;font-size:clamp(26px,8vw,32px);line-height:1.12;text-transform:uppercase;margin:6px 0 8px}
+.h1 em{font-style:normal;color:var(--or)}
+.sub{color:var(--muted);margin:0 0 18px;font-size:15.5px;line-height:1.45}
+.card{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.card h3{margin:0 0 10px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.bmi-row{display:flex;align-items:baseline;gap:10px}
+#bmi-value{font:700 40px var(--head)}
+.pill{font-size:13px;font-weight:700;padding:4px 10px;border-radius:999px;background:var(--or-dim);color:var(--or2)}
+.gauge{position:relative;height:10px;border-radius:5px;margin:14px 0 6px;background:linear-gradient(90deg,#4aa3ff 0 14%,#3ccf7a 14% 40%,#ffc43c 40% 60%,#ff5a4f 60%)}
+.gauge i{position:absolute;top:-5px;width:4px;height:20px;border-radius:2px;background:#fff;box-shadow:0 0 0 2px var(--bg);transform:translateX(-50%)}
+.gauge-l{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+.chart{width:100%;height:auto;display:block}
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chip{background:var(--bg2);border-radius:14px;padding:12px}
+.chip small{display:block;color:var(--muted);font-size:12px;margin-bottom:2px}
+.chip b{font-size:15px}
+
+/* Paywall */
+.timerbar{position:sticky;top:calc(8px + var(--safe-t));z-index:5;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#1d0d04;border:1px solid rgba(255,122,26,.45);border-radius:14px;padding:10px 14px;margin-bottom:16px;font-size:14px}
+#countdown{font:700 22px var(--head);color:var(--or2);font-variant-numeric:tabular-nums}
+.benefits{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+.benefits li{display:flex;gap:10px;font-size:15px;line-height:1.35}
+.benefits li::before{content:'✓';color:var(--or);font-weight:800}
+.plans{display:grid;gap:10px;margin:6px 0 14px}
+.plan-card{position:relative;display:flex;align-items:center;gap:12px;width:100%;padding:16px;border-radius:var(--r);background:var(--card);border:2px solid var(--line);text-align:left}
+.plan-card.sel{border-color:var(--or);background:var(--or-dim)}
+.plan-card .radio{width:22px;height:22px;border-radius:50%;border:2px solid var(--muted);flex:none;display:grid;place-items:center}
+.plan-card.sel .radio{border-color:var(--or)}
+.plan-card.sel .radio::after{content:'';width:12px;height:12px;border-radius:50%;background:var(--or)}
+.plan-card .pl{flex:1;min-width:0}
+.plan-card .pl b{display:block;font-size:16px}
+.plan-card .pl s{color:var(--muted);font-size:13px;margin-right:6px}
+.plan-card .pl span{font-size:13px;color:var(--muted)}
+.perday{text-align:right;flex:none}
+.perday b{font:700 26px var(--head)}
+.perday small{display:block;font-size:11px;color:var(--muted)}
+.badge{position:absolute;top:-10px;left:16px;background:var(--or);color:#160700;font-size:11px;font-weight:800;letter-spacing:.06em;padding:3px 10px;border-radius:999px}
+.guarantee{display:flex;gap:12px;align-items:flex-start}
+.guarantee .seal{font-size:30px}
+.guarantee p{margin:0;font-size:14px;line-height:1.45;color:var(--muted)}
+.guarantee b{color:var(--text)}
+details{border-top:1px solid var(--line);padding:12px 0}
+details:first-of-type{border-top:0}
+summary{font-weight:600;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:10px}
+summary::after{content:'+';color:var(--or);font-weight:800}
+details[open] summary::after{content:'–'}
+details p{color:var(--muted);font-size:14px;line-height:1.5;margin:8px 0 0}
+.legal{font-size:11.5px;color:var(--muted);line-height:1.5;text-align:center;margin:12px 0 0}
+
+/* Checkout */
+.sheet{margin-top:auto;background:#fff;color:var(--ink);border-radius:24px;padding:20px 18px}
+.sheet h2{margin:0 0 14px;font-size:20px}
+.sumrow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;font-size:15px}
+.sumrow.tot{font-weight:800;border:0;font-size:17px}
+.fake-field{border:1px solid #ddd;border-radius:12px;padding:14px;margin-top:10px;color:#888;font-size:15px;display:flex;justify-content:space-between}
+.demo-note{margin:14px 0;padding:10px 12px;border-radius:12px;background:#fff4ea;color:#9a4a10;font-size:14px;font-weight:600;text-align:center}
+.sheet .btn{box-shadow:none}
+.paid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px}
+.paid .ok{width:84px;height:84px;border-radius:50%;background:var(--or);color:#160700;display:grid;place-items:center;font-size:44px;font-weight:800;box-shadow:0 0 40px rgba(255,122,26,.6)}
+.spinner{width:22px;height:22px;border-radius:50%;border:3px solid rgba(0,0,0,.2);border-top-color:#160700;display:inline-block;animation:spin .8s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Challenge */
+[data-screen="challenge"]{background:var(--cream);color:var(--ink)}
+
+.toast{position:fixed;left:50%;bottom:calc(24px + var(--safe-b));transform:translate(-50%,20px);background:#222;color:#fff;padding:12px 18px;border-radius:999px;font-size:14px;font-weight:600;opacity:0;transition:.25s;z-index:50;max-width:calc(100% - 32px);text-align:center;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <section data-screen="welcome">
+    <div class="logo" id="logo"><i></i>BOXER</div>
+    <div class="welcome-stage">
+      <div class="fighter" id="welcome-fighter"></div>
+      <div class="bigword" id="welcome-word"></div>
+    </div>
+    <p class="tagline"><b>Allenati come un pugile.</b><br>A casa, in 15 minuti al giorno, senza attrezzi.</p>
+    <button class="btn" id="btn-start">Inizia il test gratuito</button>
+    <div class="proof"><span>★ 4,8 su 5</span><span>·</span><span>Piano in 1 minuto</span><span>·</span><span>Per tutti i livelli</span></div>
+  </section>
+
+  <section data-screen="quiz">
+    <div class="qtop">
+      <button class="back" id="q-back" aria-label="Indietro">‹</button>
+      <div class="bar"><i id="q-bar"></i></div>
+      <span class="qstep" id="q-step"></span>
+    </div>
+    <div id="quiz" style="display:flex;flex-direction:column;flex:1">
+      <h1 id="q-title"></h1>
+      <p class="qhint" id="q-hint"></p>
+      <div id="q-body"></div>
+      <div class="foot" id="q-foot"><button class="btn" id="q-next">Avanti</button></div>
+    </div>
+  </section>
+
+  <section data-screen="building">
+    <div class="logo"><i></i>BOXER</div>
+    <div class="build">
+      <div class="ring">
+        <svg viewBox="0 0 100 100" width="180" height="180">
+          <circle cx="50" cy="50" r="44" stroke="#2a2a31" stroke-width="8" fill="none"/>
+          <circle id="ring-arc" cx="50" cy="50" r="44" stroke="#ff7a1a" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="276.5" stroke-dashoffset="276.5"/>
+        </svg>
+        <b id="ring-pct">0%</b>
+      </div>
+      <h2 class="h1" style="text-align:center">Stiamo creando<br>il tuo piano</h2>
+      <ul class="checks" id="build-checks">
+        <li><i>✓</i>Analisi del tuo profilo</li>
+        <li><i>✓</i>Scelta delle combinazioni di colpi</li>
+        <li><i>✓</i>Calcolo dell’intensità giusta</li>
+        <li><i>✓</i>Programma di 28 giorni</li>
+      </ul>
+      <div class="review" id="build-review"></div>
+    </div>
+  </section>
+
+  <section data-screen="plan">
+    <div class="logo"><i></i>BOXER</div>
+    <h1 class="h1" id="plan-title"></h1>
+    <p class="sub" id="plan-date"></p>
+    <div class="card">
+      <h3>Il tuo peso previsto</h3>
+      <svg class="chart" id="plan-chart" viewBox="0 0 320 170" role="img" aria-label="Grafico del peso previsto"></svg>
+    </div>
+    <div class="card">
+      <h3>Indice di massa corporea</h3>
+      <div class="bmi-row"><span id="bmi-value"></span><span class="pill" id="bmi-label"></span></div>
+      <div class="gauge"><i id="bmi-marker"></i></div>
+      <div class="gauge-l"><span>Sottopeso</span><span>Normale</span><span>Sovrappeso</span><span>Obesità</span></div>
+    </div>
+    <div class="chips" id="plan-chips"></div>
+    <div class="foot"><button class="btn" id="plan-next">Ottieni il mio piano</button></div>
+  </section>
+
+  <section data-screen="paywall">
+    <div class="timerbar"><span>Sconto riservato per</span><span id="countdown">10:00</span></div>
+    <h1 class="h1">Il tuo piano <em>Boxer</em><br>è pronto</h1>
+    <p class="sub" id="pay-sub"></p>
+    <div class="card">
+      <ul class="benefits">
+        <li>Sfida di 28 giorni costruita sul tuo livello</li>
+        <li>Allenamenti guidati dalla voce del coach, colpo per colpo</li>
+        <li>Solo 15 minuti al giorno, a casa, senza attrezzi</li>
+        <li>Brucia grassi, tonifica braccia, spalle e addome</li>
+      </ul>
+    </div>
+    <div class="plans" id="plans"></div>
+    <button class="btn" id="pay-btn">Ottieni il mio piano</button>
+    <p class="legal" id="pay-legal"></p>
+    <div class="card" style="margin-top:16px">
+      <div class="guarantee"><span class="seal">🛡️</span><p><b>Garanzia soddisfatti o rimborsati di 30 giorni.</b> Se non vedi risultati seguendo il piano, ti restituiamo l’intero importo.</p></div>
+    </div>
+    <div class="card">
+      <h3>Domande frequenti</h3>
+      <details><summary>Serve esperienza di boxe?</summary><p>No. Il programma parte dalle basi, jab e diretto, e aggiunge un colpo alla volta.</p></details>
+      <details><summary>Mi servono guantoni o un sacco?</summary><p>No. Lo shadow boxing si fa a mani nude, con 2 metri quadrati di spazio.</p></details>
+      <details><summary>Posso disdire quando voglio?</summary><p>Sì, in qualsiasi momento dalle impostazioni, senza penali.</p></details>
+    </div>
+    <div class="review" id="pay-review" style="max-width:none"></div>
+  </section>
+
+  <section data-screen="checkout">
+    <div class="logo"><i></i>BOXER</div>
+    <div class="sheet" id="checkout-sheet">
+      <h2>Riepilogo ordine</h2>
+      <div class="sumrow"><span id="co-plan"></span><span id="co-was"></span></div>
+      <div class="sumrow"><span>Sconto</span><span id="co-disc" style="color:#d4520a"></span></div>
+      <div class="sumrow tot"><span>Totale</span><span id="co-total"></span></div>
+      <div class="fake-field"><span>Numero carta</span><span>•••• •••• •••• 4242</span></div>
+      <div class="fake-field"><span>Scadenza · CVC</span><span>12/29 · •••</span></div>
+      <div class="demo-note">Demo — nessun addebito</div>
+      <button class="btn" id="confirm-pay"></button>
+      <button class="btn ghost" id="co-back" style="margin-top:8px;color:var(--ink);border-color:#ddd">Indietro</button>
+    </div>
+    <div class="paid" id="paid" hidden>
+      <div class="ok">✓</div>
+      <h2 class="h1">Benvenuto in Boxer!</h2>
+      <p class="sub">La tua sfida di 28 giorni ti aspetta.</p>
+    </div>
+  </section>
+
+  <section data-screen="challenge"></section>
+  <section data-screen="workout"></section>
+  <section data-screen="done"></section>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script type="module">
+import { QUESTIONS, PRICES, validateAnswer, bmi, projection } from './logic.js';
+import { createFighter, poseSVG } from './fighter.js';
+
+// ---------- state ----------
+const KEY = 'boxer.v1';
+const DEFAULT = { screen: 'welcome', qIndex: 0, answers: {}, paid: false, plan: 'w4', completed: [], streak: 0, lastDone: null, deadline: null, currentDay: null };
+function load() {
+  try { return { ...DEFAULT, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch { return { ...DEFAULT }; }
+}
+let state = load();
+const store = {
+  get: () => state,
+  set(patch) { state = { ...state, ...patch }; try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} },
+  reset() { state = { ...DEFAULT }; try { localStorage.removeItem(KEY); } catch {} },
+};
+window.boxerStore = store;
+
+const params = new URLSearchParams(location.search);
+if (params.has('reset')) {
+  store.reset();
+  params.delete('reset');
+  history.replaceState(null, '', location.pathname + (params.toString() ? '?' + params : ''));
+}
+
+const $ = (s, el = document) => el.querySelector(s);
+const eur = (n) => n.toLocaleString('it-IT', { style: 'currency', currency: 'EUR' });
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ---------- router ----------
+const screens = {};
+let leave = null;
+function go(name, opts = {}) {
+  if (leave) { leave(); leave = null; }
+  store.set({ screen: name });
+  document.querySelectorAll('[data-screen]').forEach((s) => s.classList.toggle('active', s.dataset.screen === name));
+  window.scrollTo(0, 0);
+  leave = screens[name]?.(opts) || null;
+}
+
+// Hidden reset: hold the logo for 1.5 s.
+document.querySelectorAll('.logo').forEach((el) => {
+  let h;
+  const stop = () => clearTimeout(h);
+  el.addEventListener('pointerdown', () => { h = setTimeout(() => { store.reset(); location.reload(); }, 1500); });
+  el.addEventListener('pointerup', stop); el.addEventListener('pointerleave', stop);
+});
+
+// ---------- welcome ----------
+const PHRASES = [['ALLENATI', 'COME', 'UN PUGILE.'], ['15', 'MINUTI', 'AL GIORNO.'], ['NIENTE', 'PALESTRA.'], ['INIZIA', 'ADESSO.']];
+screens.welcome = () => {
+  const f = createFighter($('#welcome-fighter'));
+  const word = $('#welcome-word');
+  const punches = ['jab', 'cross', 'jab', 'hookL', 'cross', 'upperR', 'slip'];
+  let i = 0, p = 0, w = 0;
+  const words = PHRASES.flat();
+  const tw = setInterval(() => { word.innerHTML = `<span>${esc(words[w++ % words.length])}</span>`; }, 650);
+  const tp = setInterval(() => f.pose(punches[p++ % punches.length]), 900);
+  word.innerHTML = `<span>${words[0]}</span>`; w = 1; i;
+  $('#btn-start').onclick = () => go('quiz');
+  return () => { clearInterval(tw); clearInterval(tp); f.destroy(); };
+};
+
+// ---------- quiz ----------
+function renderQuiz() {
+  const { qIndex, answers } = store.get();
+  const q = QUESTIONS[qIndex];
+  const quiz = $('#quiz');
+  quiz.dataset.type = q.type; quiz.dataset.id = q.id;
+  $('#q-bar').style.width = `${((qIndex + 1) / QUESTIONS.length) * 100}%`;
+  $('#q-step').textContent = `${qIndex + 1}/${QUESTIONS.length}`;
+  $('#q-title').textContent = q.title;
+  $('#q-hint').textContent = q.type === 'multi' ? 'Puoi sceglierne più di una' : q.type === 'number' ? '' : '';
+  $('#q-hint').hidden = q.type !== 'multi';
+  const body = $('#q-body');
+  const next = $('#q-next');
+  const foot = $('#q-foot');
+  next.textContent = q.type === 'info' ? 'Continua' : 'Avanti';
+
+  if (q.type === 'choice' || q.type === 'multi') {
+    const val = answers[q.id];
+    body.innerHTML = `<div class="opts">${q.options.map((o) => {
+      const sel = q.type === 'multi' ? (val || []).includes(o.v) : val === o.v;
+      return `<button class="opt${sel ? ' sel' : ''}" data-v="${o.v}">${o.emoji ? `<span class="em">${o.emoji}</span>` : ''}<span>${esc(o.label)}</span>${q.type === 'multi' ? '<span class="tick">✓</span>' : ''}</button>`;
+    }).join('')}</div>`;
+    foot.hidden = q.type === 'choice';
+    body.querySelectorAll('.opt').forEach((b) => b.onclick = () => {
+      if (q.type === 'choice') {
+        body.querySelectorAll('.opt').forEach((x) => x.classList.toggle('sel', x === b));
+        setAnswer(q.id, b.dataset.v);
+        setTimeout(advance, 160);
+      } else {
+        b.classList.toggle('sel');
+        const v = [...body.querySelectorAll('.opt.sel')].map((x) => x.dataset.v);
+        setAnswer(q.id, v);
+        next.disabled = !!validateAnswer(q, v, answers);
+      }
+    });
+    if (q.type === 'multi') next.disabled = !!validateAnswer(q, val, answers);
+  } else if (q.type === 'number') {
+    foot.hidden = false;
+    const val = answers[q.id] ?? '';
+    body.innerHTML = `<div class="numwrap"><input id="num" type="number" inputmode="decimal" min="${q.min}" max="${q.max}" value="${esc(val)}" aria-label="${esc(q.title)}"><span class="unit">${q.unit}</span></div><p id="q-error" hidden></p><p class="bmi-hint" id="bmi-hint"></p>`;
+    const input = $('#num');
+    const check = () => {
+      const v = input.value;
+      const err = validateAnswer(q, v, store.get().answers);
+      next.disabled = !!err;
+      const e = $('#q-error');
+      e.textContent = v === '' ? '' : err || '';
+      e.hidden = v === '' || !err;
+      if (!err) setAnswer(q.id, Number(v));
+      const a = store.get().answers;
+      $('#bmi-hint').textContent = q.id === 'weight' && !err && a.height ? `Il tuo IMC: ${bmi(a.height, Number(v)).value.toLocaleString('it-IT')}` : '';
+    };
+    input.oninput = check;
+    input.onkeydown = (e) => { if (e.key === 'Enter' && !next.disabled) advance(); };
+    check();
+    setTimeout(() => input.focus(), 50);
+  } else {
+    foot.hidden = false;
+    next.disabled = false;
+    body.innerHTML = `<div class="info-card"><div class="fighter">${poseSVG(qIndex % 2 ? 'jab' : 'guard')}</div><p>${esc(q.text)}</p></div>`;
+  }
+  next.onclick = () => { if (!next.disabled) advance(); };
+}
+function setAnswer(id, v) { store.set({ answers: { ...store.get().answers, [id]: v } }); }
+function advance() {
+  const i = store.get().qIndex;
+  if (i + 1 >= QUESTIONS.length) { go('building'); return; }
+  store.set({ qIndex: i + 1 });
+  renderQuiz();
+}
+screens.quiz = () => {
+  $('#q-back').onclick = () => {
+    const i = store.get().qIndex;
+    if (i === 0) go('welcome'); else { store.set({ qIndex: i - 1 }); renderQuiz(); }
+  };
+  renderQuiz();
+};
+
+// ---------- building ----------
+const REVIEWS = [ // ESEMPIO — recensioni di esempio per la demo
+  { n: 'Marco, 41 anni', t: 'In un mese ho perso 4 kg e mi diverto davvero. 15 minuti la sera e via.' },
+  { n: 'Giulia, 33 anni', t: 'Finalmente un allenamento che non mi annoia. La voce che chiama i colpi è top.' },
+  { n: 'Luca, 28 anni', t: 'Mai fatto boxe prima: dopo due settimane faccio combinazioni da 4 colpi.' },
+];
+const reviewHTML = (r) => `<div class="stars">★★★★★</div><p>“${esc(r.t)}”</p><small>${esc(r.n)}</small>`;
+screens.building = () => {
+  const arc = $('#ring-arc'), pct = $('#ring-pct'), items = [...document.querySelectorAll('#build-checks li')];
+  items.forEach((li) => li.classList.remove('done'));
+  const total = 4500, t0 = performance.now();
+  let r = 0;
+  $('#build-review').innerHTML = reviewHTML(REVIEWS[0]);
+  const rv = setInterval(() => { $('#build-review').innerHTML = reviewHTML(REVIEWS[++r % REVIEWS.length]); }, 1600);
+  let raf;
+  const tick = (now) => {
+    const k = Math.min(1, (now - t0) / total);
+    pct.textContent = `${Math.round(k * 100)}%`;
+    arc.setAttribute('stroke-dashoffset', String(276.5 * (1 - k)));
+    items.forEach((li, i) => li.classList.toggle('done', k >= (i + 1) / items.length - 0.001));
+    if (k < 1) raf = requestAnimationFrame(tick); else setTimeout(() => go('plan'), 400);
+  };
+  raf = requestAnimationFrame(tick);
+  return () => { cancelAnimationFrame(raf); clearInterval(rv); };
+};
+
+// ---------- plan ----------
+const LEVEL_LABEL = { principiante: 'Principiante', intermedio: 'Intermedio', avanzato: 'Avanzato' };
+const GOAL_LABEL = { dimagrire: 'Perdere peso', tonificare: 'Tonificare', forma: 'Mantenersi in forma', stress: 'Scaricare lo stress' };
+function planData() {
+  const a = store.get().answers;
+  const proj = projection(a, new Date());
+  const date = proj.endDate.toLocaleDateString('it-IT', { day: 'numeric', month: 'long' });
+  return { a, proj, date };
+}
+function chartSVG(points) {
+  const W = 320, H = 170, pad = { l: 34, r: 16, t: 26, b: 26 };
+  const kgs = points.map((p) => p.kg);
+  let lo = Math.min(...kgs), hi = Math.max(...kgs);
+  if (hi - lo < 4) { lo -= 2; hi += 2; }
+  const x = (i) => pad.l + (i / (points.length - 1)) * (W - pad.l - pad.r);
+  const y = (kg) => pad.t + ((hi - kg) / (hi - lo)) * (H - pad.t - pad.b);
+  const line = points.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(p.kg).toFixed(1)}`).join(' ');
+  const area = `${line} L${x(points.length - 1)} ${H - pad.b} L${x(0)} ${H - pad.b} Z`;
+  const first = points[0], last = points.at(-1);
+  const fmt = (n) => n.toLocaleString('it-IT');
+  return `<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a1a" stop-opacity=".45"/><stop offset="1" stop-color="#ff7a1a" stop-opacity="0"/></linearGradient></defs>
+    <path d="${area}" fill="url(#g)"/>
+    <path d="${line}" fill="none" stroke="#ff7a1a" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="${x(0)}" cy="${y(first.kg)}" r="5" fill="#16161b" stroke="#fff" stroke-width="2"/>
+    <circle cx="${x(points.length - 1)}" cy="${y(last.kg)}" r="6" fill="#ff7a1a" stroke="#fff" stroke-width="2"/>
+    <text x="${x(0)}" y="${y(first.kg) - 12}" fill="#f5f2ee" font-size="13" font-weight="700" text-anchor="start">${fmt(first.kg)} kg</text>
+    <text x="${x(points.length - 1)}" y="${y(last.kg) - 12}" fill="#ff9a3c" font-size="13" font-weight="700" text-anchor="end">${fmt(last.kg)} kg</text>
+    <text x="${pad.l}" y="${H - 6}" fill="#a3a0a8" font-size="11">Oggi</text>
+    <text x="${W - pad.r}" y="${H - 6}" fill="#a3a0a8" font-size="11" text-anchor="end">Settimana ${points.length - 1}</text>`;
+}
+screens.plan = () => {
+  const { a, proj, date } = planData();
+  const b = bmi(a.height, a.weight);
+  const losing = Number(a.target_weight) < Number(a.weight);
+  $('#plan-title').innerHTML = losing ? `Arriverai a <em>${esc(a.target_weight)} kg</em>` : `Il tuo piano<br><em>è pronto</em>`;
+  $('#plan-date').textContent = `Previsione: obiettivo raggiunto entro il ${date}, seguendo il piano ${a.minutes || 15} minuti al giorno.`;
+  $('#plan-chart').innerHTML = chartSVG(proj.points);
+  $('#bmi-value').textContent = b.value.toLocaleString('it-IT', { minimumFractionDigits: 1 });
+  $('#bmi-label').textContent = b.label;
+  const pos = Math.max(2, Math.min(98, ((b.value - 15) / (40 - 15)) * 100));
+  $('#bmi-marker').style.left = `${pos}%`;
+  const zones = (a.zones || []).length;
+  $('#plan-chips').innerHTML = [
+    ['Livello', LEVEL_LABEL[a.fitness] || 'Principiante'],
+    ['Allenamento', `${a.minutes || 15} min al giorno`],
+    ['Programma', 'Sfida 28 giorni'],
+    ['Zone', zones ? `${zones} ${zones === 1 ? 'zona' : 'zone'} mirate` : 'Total body'],
+  ].map(([k, v]) => `<div class="chip"><small>${k}</small><b>${esc(v)}</b></div>`).join('');
+  $('#plan-next').onclick = () => go('paywall');
+};
+
+// ---------- paywall ----------
+function renderPlans() {
+  const sel = store.get().plan;
+  $('#plans').innerHTML = PRICES.map((p) => `
+    <button class="plan-card${p.id === sel ? ' sel' : ''}" data-plan="${p.id}">
+      ${p.best ? '<span class="badge">PIÙ SCELTO</span>' : ''}
+      <span class="radio"></span>
+      <span class="pl"><b>${p.label}</b>${p.was ? `<s>${eur(p.was)}</s>` : ''}<span>${eur(p.price)}</span></span>
+      <span class="perday"><b>${eur(p.perDay)}</b><small>al giorno</small></span>
+    </button>`).join('');
+  $('#plans').querySelectorAll('.plan-card').forEach((b) => b.onclick = () => { store.set({ plan: b.dataset.plan }); renderPlans(); });
+  const p = PRICES.find((x) => x.id === sel);
+  $('#pay-legal').textContent = `Demo: nessun addebito reale. Nel prodotto finale il ${p.label.toLowerCase()} si rinnova automaticamente a ${eur(p.was || p.price)} salvo disdetta.`;
+}
+screens.paywall = () => {
+  let { deadline } = store.get();
+  if (!deadline || deadline < Date.now()) { deadline = Date.now() + 10 * 60 * 1000; store.set({ deadline }); }
+  const a = store.get().answers;
+  $('#pay-sub').textContent = `${GOAL_LABEL[a.goal] || 'Il tuo obiettivo'}, livello ${(LEVEL_LABEL[a.fitness] || 'principiante').toLowerCase()}: il programma è calibrato sulle tue risposte.`;
+  const cd = $('#countdown');
+  const tick = () => {
+    const s = Math.max(0, Math.round((deadline - Date.now()) / 1000));
+    cd.textContent = `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  };
+  tick();
+  const h = setInterval(tick, 1000);
+  renderPlans();
+  $('#pay-review').innerHTML = reviewHTML(REVIEWS[0]);
+  $('#pay-btn').onclick = () => go('checkout');
+  return () => clearInterval(h);
+};
+
+// ---------- checkout ----------
+screens.checkout = () => {
+  const p = PRICES.find((x) => x.id === store.get().plan) || PRICES[1];
+  $('#checkout-sheet').hidden = false; $('#paid').hidden = true;
+  $('#co-plan').textContent = p.label;
+  $('#co-was').textContent = eur(p.was || p.price);
+  $('#co-disc').textContent = p.was ? `− ${eur(p.was - p.price)}` : '—';
+  $('#co-total').textContent = eur(p.price);
+  const btn = $('#confirm-pay');
+  btn.disabled = false;
+  btn.textContent = `Paga ${eur(p.price)}`;
+  let h;
+  btn.onclick = () => {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>';
+    h = setTimeout(() => {
+      store.set({ paid: true });
+      $('#checkout-sheet').hidden = true; $('#paid').hidden = false;
+      h = setTimeout(() => go('challenge'), 1100);
+    }, 1000);
+  };
+  $('#co-back').onclick = () => go('paywall');
+  return () => clearTimeout(h);
+};
+
+// ---------- challenge / workout (filled in by later tasks) ----------
+screens.challenge = () => {
+  $('[data-screen="challenge"]').innerHTML = '<h1 class="h1">Sfida Boxer 28 giorni</h1>';
+};
+
+// ---------- boot ----------
+let start = store.get().screen;
+if (start === 'building') start = 'plan';
+if (start === 'checkout') start = 'paywall';
+if (!screens[start]) start = 'welcome';
+if (['challenge', 'workout', 'done'].includes(start) && !store.get().paid) start = 'welcome';
+if (start === 'workout' || start === 'done') start = 'challenge';
+go(start);
+</script>
+</body>
+</html>
