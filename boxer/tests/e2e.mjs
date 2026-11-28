@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 
 const { chromium } = createRequire(import.meta.url)('playwright');
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png' };
+const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png', '.jpg': 'image/jpeg' };
 const BASE = 'http://boxer.test/boxer/';
 
 const browser = await chromium.launch();
@@ -110,6 +110,18 @@ await check('reload in the middle of the quiz resumes on the same question', asy
   await page.reload();
   await active(page, 'quiz').waitFor();
   assert.equal(await page.locator('#q-title').innerText(), before);
+  await page.context().close();
+});
+
+await check('double-tapping an answer does not skip the next question', async () => {
+  const page = await newPage();
+  await page.goto(BASE + '?reset');
+  await page.click('#btn-start');
+  const opt = page.locator('#quiz .opt').first();
+  await opt.click();
+  await opt.click({ force: true }).catch(() => {});
+  await page.waitForTimeout(500);
+  assert.equal(await page.locator('#q-step').innerText(), '2/14');
   await page.context().close();
 });
 

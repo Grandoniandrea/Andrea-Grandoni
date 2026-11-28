@@ -48,11 +48,16 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid
 .logo i{width:10px;height:10px;border-radius:50%;background:var(--or);box-shadow:0 0 12px var(--or)}
 
 .fighter svg{width:100%;height:auto;display:block;filter:drop-shadow(0 0 3px var(--or)) drop-shadow(0 0 14px rgba(255,122,26,.55))}
+.fighter img,.athlete-img{width:100%;height:auto;display:block;mix-blend-mode:screen;user-select:none;-webkit-user-select:none;animation:breathe 3.2s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.015);filter:brightness(1.12)}}
+.fighter img.hit{animation:hit .3s ease-out}
+@keyframes hit{0%{transform:scale(1);filter:brightness(1)}35%{transform:scale(1.045) translateX(-1.5%);filter:brightness(1.6) drop-shadow(0 0 18px rgba(255,122,26,.8))}100%{transform:scale(1);filter:brightness(1)}}
+.athlete-thumb{width:100%;height:100%;object-fit:cover;display:block}
 
 /* Welcome */
 .welcome-stage{position:relative;flex:1;display:flex;align-items:center;justify-content:center;min-height:380px}
-.welcome-stage .fighter{width:min(78vw,330px)}
-.bigword{position:absolute;left:0;right:0;bottom:4%;text-align:center;font-family:var(--head);font-weight:700;font-size:clamp(44px,14vw,64px);letter-spacing:.01em;text-transform:uppercase;text-shadow:0 2px 0 #000,0 0 24px rgba(0,0,0,.9);pointer-events:none}
+.welcome-stage .fighter{width:min(72vw,300px)}
+.bigword{position:absolute;left:0;right:0;bottom:16%;text-align:center;font-family:var(--head);font-weight:700;font-size:clamp(44px,14vw,64px);letter-spacing:.01em;text-transform:uppercase;text-shadow:0 2px 0 #000,0 0 24px rgba(0,0,0,.9);pointer-events:none}
 .bigword span{display:inline-block;animation:pop .32s ease-out}
 @keyframes pop{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:none}}
 .tagline{text-align:center;color:var(--muted);font-size:16px;line-height:1.45;margin:0 0 18px}
@@ -82,7 +87,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid
 #q-error{visibility:visible}
 .bmi-hint{text-align:center;color:var(--muted);font-size:14px;margin-top:10px}
 .info-card{background:var(--card);border-radius:var(--r);padding:20px;text-align:center}
-.info-card .fighter{width:150px;margin:0 auto 8px}
+.info-card .fighter{width:130px;margin:0 auto 8px}
 .info-card p{font-size:17px;line-height:1.5;margin:0}
 
 /* Building */
@@ -184,8 +189,7 @@ details p{color:var(--muted);font-size:14px;line-height:1.5;margin:8px 0 0}
 .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
 .day-tile{display:flex;flex-direction:column;align-items:center;gap:3px;padding:0;min-width:0}
 .day-tile .th{position:relative;width:100%;aspect-ratio:1;border-radius:10px;background:var(--ink);overflow:hidden;display:grid;place-items:center}
-.day-tile .th .fighter{width:92%;margin-top:6%}
-.day-tile .th .fighter svg{filter:drop-shadow(0 0 2px var(--or))}
+.day-tile .th .fighter{width:100%;height:100%}
 .day-tile small{font-size:9.5px;color:var(--ink-muted);white-space:nowrap}
 .day-tile[data-status="locked"] .th .fighter{opacity:.35}
 .day-tile[data-status="locked"] .th::after{content:'';position:absolute;inset:0;background:rgba(22,22,26,.35) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f3efe6' stroke-width='2.2' stroke-linecap='round'%3E%3Crect x='5' y='11' width='14' height='10' rx='2'/%3E%3Cpath d='M8 11V8a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E") center/42% no-repeat}
@@ -198,7 +202,7 @@ details p{color:var(--muted);font-size:14px;line-height:1.5;margin:8px 0 0}
 #day-sheet.show{transform:none}
 #day-sheet .grab{width:44px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 10px}
 #day-sheet .hero{background:radial-gradient(circle at 50% 60%,rgba(255,122,26,.18),transparent 65%),#000;border-radius:18px;height:220px;display:grid;place-items:center;margin-bottom:14px}
-#day-sheet .hero .fighter{width:150px}
+#day-sheet .hero .fighter{width:130px}
 #day-sheet small.k{color:var(--or2);font-weight:700;letter-spacing:.08em;font-size:12px}
 #day-sheet h2{font:700 26px var(--head);text-transform:uppercase;margin:2px 0 10px;line-height:1.1}
 .meta{display:flex;gap:16px;color:var(--muted);font-size:14px;margin-bottom:12px;flex-wrap:wrap}
@@ -215,7 +219,7 @@ details p{color:var(--muted);font-size:14px;line-height:1.5;margin:8px 0 0}
 .wo-segs i.on{background:var(--or)}
 .wo-segs i.now{background:linear-gradient(90deg,var(--or) var(--p,0%),var(--line) var(--p,0%))}
 .wo-stage{position:relative;flex:1;display:flex;align-items:center;justify-content:center;min-height:300px}
-.wo-stage .fighter{width:min(64vw,270px)}
+.wo-stage .fighter{width:min(56vw,240px)}
 #wo-word{position:absolute;left:0;right:0;bottom:6%;text-align:center;font:700 clamp(40px,13vw,60px) var(--head);text-transform:uppercase;text-shadow:0 2px 0 #000,0 0 24px rgba(0,0,0,.9)}
 #wo-word span{display:inline-block;animation:pop .22s ease-out}
 #wo-combo{text-align:center;font:700 34px var(--head);color:var(--or2);letter-spacing:.04em;min-height:44px}
@@ -379,7 +383,7 @@ details p{color:var(--muted);font-size:14px;line-height:1.5;margin:8px 0 0}
 
 <script type="module">
 import { QUESTIONS, PRICES, validateAnswer, bmi, projection, PROGRAM, MOVES, dayStatus, buildWorkout, createTimer } from './logic.js';
-import { createFighter, poseSVG, fighterThumb } from './fighter.js';
+import { createFighter, poseSVG, fighterThumb } from './athlete.js';
 
 // ---------- state ----------
 const KEY = 'boxer.v1';
@@ -456,6 +460,7 @@ function renderQuiz() {
   $('#q-hint').textContent = q.type === 'multi' ? 'Puoi sceglierne più di una' : q.type === 'number' ? '' : '';
   $('#q-hint').hidden = q.type !== 'multi';
   const body = $('#q-body');
+  delete body.dataset.locked;
   const next = $('#q-next');
   const foot = $('#q-foot');
   next.textContent = q.type === 'info' ? 'Continua' : 'Avanti';
@@ -469,6 +474,8 @@ function renderQuiz() {
     foot.hidden = q.type === 'choice';
     body.querySelectorAll('.opt').forEach((b) => b.onclick = () => {
       if (q.type === 'choice') {
+        if (body.dataset.locked) return;
+        body.dataset.locked = '1';
         body.querySelectorAll('.opt').forEach((x) => x.classList.toggle('sel', x === b));
         setAnswer(q.id, b.dataset.v);
         setTimeout(advance, 160);
